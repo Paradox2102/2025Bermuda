@@ -48,4 +48,25 @@ public final class Constants
     public static final double RIGHT_X_DEADBAND = 0.1;
     public static final double TURN_CONSTANT    = 6;
   }
+
+  public static class canIDConstants {
+    int gyro = 0;
+    int fl_drive = 1;
+    int fl_turn = 2;
+    int fr_drive = 3;
+    int fr_turn = 4;
+    int bl_drive = 5;
+    int bl_turn = 6;
+    int br_drive = 7;
+    int br_turn = 8;
+    int elev_leader = 10;
+    int elev_follower = 11;
+    int arm = 12;
+    int claw = 13;
+    int intake_pivot = 20;
+    int intake_roller = 21;
+    int climber = 30;
+    int climber_follow = 31;
+    int cage_grabber = 32;
+  }
 }

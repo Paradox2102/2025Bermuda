@@ -7,6 +7,22 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakePivotSubsystem extends SubsystemBase {
+  public enum IntakeState {
+    STOW(0),
+    HANDOFF(0),
+    INTAKE(0),
+    L1(0);
+
+    private double m_angle;
+    
+    IntakeState(double angle) {
+      m_angle = angle;
+    }
+
+    public double getAngle() {
+      return m_angle;
+    }
+  }
   /** Creates a new IntakePivot. */
   public IntakePivotSubsystem() {}
 

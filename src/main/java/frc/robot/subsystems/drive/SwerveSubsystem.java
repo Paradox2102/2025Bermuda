@@ -27,6 +27,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -59,15 +60,15 @@ public class SwerveSubsystem extends SubsystemBase {
     /**
      * Swerve drive object.
      */
-    private final SwerveDrive swerveDrive;
+    private final SwerveDrive m_swerveDrive;
     /**
-     * Enable vision odometry updates while driving.
+     * Enable m_vision odometry updates while driving.
      */
-    private final boolean visionDriveTest = false;
+    private final boolean m_visionDriveTest = false;
     /**
      * PhotonVision class to keep an accurate odometry.
      */
-    private Vision vision;
+    private Vision m_vision;
 
     /**
      * Initialize {@link SwerveDrive} with the directory provided.
@@ -86,33 +87,33 @@ public class SwerveSubsystem extends SubsystemBase {
         // objects being created.
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
         try {
-            swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.MAX_SPEED, startingPose);
+            m_swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.MAX_SPEED, startingPose);
             // Alternative method if you don't want to supply the conversion factor via JSON
             // files.
-            // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed,
+            // m_swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed,
             // angleConversionFactor, driveConversionFactor);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        swerveDrive.setHeadingCorrection(false); // Heading correction should only be used while controlling the robot
+        m_swerveDrive.setHeadingCorrection(false); // Heading correction should only be used while controlling the robot
                                                  // via angle.
-        swerveDrive.setCosineCompensator(false);// !SwerveDriveTelemetry.isSimulation); // Disables cosine compensation
+        m_swerveDrive.setCosineCompensator(false);// !SwerveDriveTelemetry.isSimulation); // Disables cosine compensation
                                                 // for simulations since it causes discrepancies not seen in real life.
-        swerveDrive.setAngularVelocityCompensation(true,
+        m_swerveDrive.setAngularVelocityCompensation(true,
                 true,
                 0.1); // Correct for skew that gets worse as angular velocity increases. Start with a
                       // coefficient of 0.1.
-        swerveDrive.setModuleEncoderAutoSynchronize(false,
+        m_swerveDrive.setModuleEncoderAutoSynchronize(false,
                 1); // Enable if you want to resynchronize your absolute encoders and motor encoders
                     // periodically when they are not moving.
-        // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used
+        // m_swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used
         // over the internal encoder and push the offsets onto it. Throws warning if not
         // possible
-        if (visionDriveTest) {
+        if (m_visionDriveTest) {
             setupPhotonVision();
-            // Stop the odometry thread if we are using vision that way we can synchronize
+            // Stop the odometry thread if we are using m_vision that way we can synchronize
             // updates better.
-            swerveDrive.stopOdometryThread();
+            m_swerveDrive.stopOdometryThread();
         }
         setupPathPlanner();
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(this::zeroGyroWithAlliance));
@@ -125,7 +126,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param controllerCfg Swerve Controller.
      */
     public SwerveSubsystem(SwerveDriveConfiguration driveCfg, SwerveControllerConfiguration controllerCfg) {
-        swerveDrive = new SwerveDrive(driveCfg,
+        m_swerveDrive = new SwerveDrive(driveCfg,
                 controllerCfg,
                 Constants.MAX_SPEED,
                 new Pose2d(new Translation2d(Meter.of(2), Meter.of(0)),
@@ -133,18 +134,18 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     /**
-     * Setup the photon vision class.
+     * Setup the photon m_vision class.
      */
     public void setupPhotonVision() {
-        vision = new Vision(swerveDrive::getPose, swerveDrive.field);
+        m_vision = new Vision(m_swerveDrive::getPose, m_swerveDrive.field);
     }
 
     @Override
     public void periodic() {
-        // When vision is enabled we must manually update odometry in SwerveDrive
-        if (visionDriveTest) {
-            swerveDrive.updateOdometry();
-            vision.updatePoseEstimation(swerveDrive);
+        // When m_vision is enabled we must manually update odometry in SwerveDrive
+        if (m_visionDriveTest) {
+            m_swerveDrive.updateOdometry();
+            m_vision.updatePoseEstimation(m_swerveDrive);
         }
     }
 
@@ -173,12 +174,12 @@ public class SwerveSubsystem extends SubsystemBase {
                     // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                     (speedsRobotRelative, moduleFeedForwards) -> {
                         if (enableFeedforward) {
-                            swerveDrive.drive(
+                            m_swerveDrive.drive(
                                     speedsRobotRelative,
-                                    swerveDrive.kinematics.toSwerveModuleStates(speedsRobotRelative),
+                                    m_swerveDrive.kinematics.toSwerveModuleStates(speedsRobotRelative),
                                     moduleFeedForwards.linearForces());
                         } else {
-                            swerveDrive.setChassisSpeeds(speedsRobotRelative);
+                            m_swerveDrive.setChassisSpeeds(speedsRobotRelative);
                         }
                     },
                     // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also
@@ -261,8 +262,8 @@ public class SwerveSubsystem extends SubsystemBase {
     public Command driveToPose(Pose2d pose) {
         // Create the constraints to use while pathfinding
         PathConstraints constraints = new PathConstraints(
-                swerveDrive.getMaximumChassisVelocity(), 4.0,
-                swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
+                m_swerveDrive.getMaximumChassisVelocity(), 4.0,
+                m_swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         return AutoBuilder.pathfindToPose(
@@ -285,11 +286,11 @@ public class SwerveSubsystem extends SubsystemBase {
     private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
             throws IOException, ParseException {
         SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(RobotConfig.fromGUISettings(),
-                swerveDrive.getMaximumChassisAngularVelocity());
+                m_swerveDrive.getMaximumChassisAngularVelocity());
         AtomicReference<SwerveSetpoint> prevSetpoint = new AtomicReference<>(
-                new SwerveSetpoint(swerveDrive.getRobotVelocity(),
-                        swerveDrive.getStates(),
-                        DriveFeedforwards.zeros(swerveDrive.getModules().length)));
+                new SwerveSetpoint(m_swerveDrive.getRobotVelocity(),
+                        m_swerveDrive.getStates(),
+                        DriveFeedforwards.zeros(m_swerveDrive.getModules().length)));
         AtomicReference<Double> previousTime = new AtomicReference<>();
 
         return startRun(() -> previousTime.set(Timer.getFPGATimestamp()),
@@ -298,7 +299,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     SwerveSetpoint newSetpoint = setpointGenerator.generateSetpoint(prevSetpoint.get(),
                             robotRelativeChassisSpeed.get(),
                             newTime - previousTime.get());
-                    swerveDrive.drive(newSetpoint.robotRelativeSpeeds(),
+                    m_swerveDrive.drive(newSetpoint.robotRelativeSpeeds(),
                             newSetpoint.moduleStates(),
                             newSetpoint.feedforwards().linearForces());
                     prevSetpoint.set(newSetpoint);
@@ -335,7 +336,7 @@ public class SwerveSubsystem extends SubsystemBase {
         return SwerveDriveTest.generateSysIdCommand(
                 SwerveDriveTest.setDriveSysIdRoutine(
                         new Config(),
-                        this, swerveDrive, 12, true),
+                        this, m_swerveDrive, 12, true),
                 3.0, 5.0, 3.0);
     }
 
@@ -348,7 +349,7 @@ public class SwerveSubsystem extends SubsystemBase {
         return SwerveDriveTest.generateSysIdCommand(
                 SwerveDriveTest.setAngleSysIdRoutine(
                         new Config(),
-                        this, swerveDrive),
+                        this, m_swerveDrive),
                 3.0, 5.0, 3.0);
     }
 
@@ -358,7 +359,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return a Command that centers the modules of the SwerveDrive subsystem
      */
     public Command centerModulesCommand() {
-        return run(() -> Arrays.asList(swerveDrive.getModules())
+        return run(() -> Arrays.asList(m_swerveDrive.getModules())
                 .forEach(it -> it.setAngle(0.0)));
     }
 
@@ -374,7 +375,7 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public Command driveToDistanceCommand(double distanceInMeters, double speedInMetersPerSecond) {
         return run(() -> drive(new ChassisSpeeds(speedInMetersPerSecond, 0, 0)))
-                .until(() -> swerveDrive.getPose().getTranslation()
+                .until(() -> m_swerveDrive.getPose().getTranslation()
                         .getDistance(new Translation2d(0, 0)) > distanceInMeters);
     }
 
@@ -387,7 +388,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param kA the acceleration gain of the feedforward
      */
     public void replaceSwerveModuleFeedforward(double kS, double kV, double kA) {
-        swerveDrive.replaceSwerveModuleFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
+        m_swerveDrive.replaceSwerveModuleFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
     }
 
     /**
@@ -406,10 +407,10 @@ public class SwerveSubsystem extends SubsystemBase {
             DoubleSupplier angularRotationX) {
         return run(() -> {
             // Make the robot move
-            swerveDrive.drive(SwerveMath.scaleTranslation(new Translation2d(
-                    translationX.getAsDouble() * swerveDrive.getMaximumChassisVelocity(),
-                    translationY.getAsDouble() * swerveDrive.getMaximumChassisVelocity()), 0.8),
-                    Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumChassisAngularVelocity(),
+            m_swerveDrive.drive(SwerveMath.scaleTranslation(new Translation2d(
+                    translationX.getAsDouble() * m_swerveDrive.getMaximumChassisVelocity(),
+                    translationY.getAsDouble() * m_swerveDrive.getMaximumChassisVelocity()), 0.8),
+                    Math.pow(angularRotationX.getAsDouble(), 3) * m_swerveDrive.getMaximumChassisAngularVelocity(),
                     true,
                     false);
         });
@@ -429,7 +430,7 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier headingX,
             DoubleSupplier headingY) {
-        // swerveDrive.setHeadingCorrection(true); // Normally you would want heading
+        // m_swerveDrive.setHeadingCorrection(true); // Normally you would want heading
         // correction for this kind of control.
         return run(() -> {
 
@@ -437,11 +438,11 @@ public class SwerveSubsystem extends SubsystemBase {
                     translationY.getAsDouble()), 0.8);
 
             // Make the robot move
-            driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(), scaledInputs.getY(),
+            driveFieldOriented(m_swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(), scaledInputs.getY(),
                     headingX.getAsDouble(),
                     headingY.getAsDouble(),
-                    swerveDrive.getOdometryHeading().getRadians(),
-                    swerveDrive.getMaximumChassisVelocity()));
+                    m_swerveDrive.getOdometryHeading().getRadians(),
+                    m_swerveDrive.getMaximumChassisVelocity()));
         });
     }
 
@@ -469,7 +470,7 @@ public class SwerveSubsystem extends SubsystemBase {
      *                      robot-relative.
      */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-        swerveDrive.drive(translation,
+        m_swerveDrive.drive(translation,
                 rotation,
                 fieldRelative,
                 false); // Open loop is disabled since it shouldn't be used most of the time.
@@ -481,7 +482,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param velocity Velocity according to the field.
      */
     public void driveFieldOriented(ChassisSpeeds velocity) {
-        swerveDrive.driveFieldOriented(velocity);
+        m_swerveDrive.driveFieldOriented(velocity);
     }
 
     /**
@@ -491,7 +492,7 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public Command driveFieldOriented(Supplier<ChassisSpeeds> velocity) {
         return run(() -> {
-            swerveDrive.driveFieldOriented(velocity.get());
+            m_swerveDrive.driveFieldOriented(velocity.get());
         });
     }
 
@@ -501,7 +502,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param velocity Robot oriented {@link ChassisSpeeds}
      */
     public void drive(ChassisSpeeds velocity) {
-        swerveDrive.drive(velocity);
+        m_swerveDrive.drive(velocity);
     }
 
     /**
@@ -510,7 +511,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return {@link SwerveDriveKinematics} of the swerve drive.
      */
     public SwerveDriveKinematics getKinematics() {
-        return swerveDrive.kinematics;
+        return m_swerveDrive.kinematics;
     }
 
     /**
@@ -523,7 +524,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param initialHolonomicPose The pose to set the odometry to
      */
     public void resetOdometry(Pose2d initialHolonomicPose) {
-        swerveDrive.resetOdometry(initialHolonomicPose);
+        m_swerveDrive.resetOdometry(initialHolonomicPose);
     }
 
     /**
@@ -533,7 +534,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return The robot's pose
      */
     public Pose2d getPose() {
-        return swerveDrive.getPose();
+        return m_swerveDrive.getPose();
     }
 
     /**
@@ -542,7 +543,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param chassisSpeeds Chassis Speeds to set.
      */
     public void setChassisSpeeds(ChassisSpeeds chassisSpeeds) {
-        swerveDrive.setChassisSpeeds(chassisSpeeds);
+        m_swerveDrive.setChassisSpeeds(chassisSpeeds);
     }
 
     /**
@@ -551,7 +552,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param trajectory The trajectory to post.
      */
     public void postTrajectory(Trajectory trajectory) {
-        swerveDrive.postTrajectory(trajectory);
+        m_swerveDrive.postTrajectory(trajectory);
     }
 
     /**
@@ -559,7 +560,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * facing toward 0.
      */
     public void zeroGyro() {
-        swerveDrive.zeroGyro();
+        m_swerveDrive.zeroGyro();
     }
 
     /**
@@ -595,7 +596,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param brake True to set motors to brake mode, false for coast.
      */
     public void setMotorBrake(boolean brake) {
-        swerveDrive.setMotorIdleMode(brake);
+        m_swerveDrive.setMotorIdleMode(brake);
     }
 
     /**
@@ -623,7 +624,7 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, double headingX, double headingY) {
         Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
-        return swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
+        return m_swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
                 scaledInputs.getY(),
                 headingX,
                 headingY,
@@ -644,7 +645,7 @@ public class SwerveSubsystem extends SubsystemBase {
     public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, Rotation2d angle) {
         Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
 
-        return swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
+        return m_swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
                 scaledInputs.getY(),
                 angle.getRadians(),
                 getHeading().getRadians(),
@@ -657,7 +658,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return A ChassisSpeeds object of the current field-relative velocity
      */
     public ChassisSpeeds getFieldVelocity() {
-        return swerveDrive.getFieldVelocity();
+        return m_swerveDrive.getFieldVelocity();
     }
 
     /**
@@ -666,7 +667,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return A {@link ChassisSpeeds} object of the current velocity
      */
     public ChassisSpeeds getRobotVelocity() {
-        return swerveDrive.getRobotVelocity();
+        return m_swerveDrive.getRobotVelocity();
     }
 
     /**
@@ -675,7 +676,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return {@link SwerveController} from the {@link SwerveDrive}.
      */
     public SwerveController getSwerveController() {
-        return swerveDrive.swerveController;
+        return m_swerveDrive.swerveController;
     }
 
     /**
@@ -684,14 +685,14 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return The {@link SwerveDriveConfiguration} fpr the current drive.
      */
     public SwerveDriveConfiguration getSwerveDriveConfiguration() {
-        return swerveDrive.swerveDriveConfiguration;
+        return m_swerveDrive.swerveDriveConfiguration;
     }
 
     /**
      * Lock the swerve drive to prevent it from moving.
      */
     public void lock() {
-        swerveDrive.lockPose();
+        m_swerveDrive.lockPose();
     }
 
     /**
@@ -700,14 +701,14 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return The heading as a {@link Rotation2d} angle
      */
     public Rotation2d getPitch() {
-        return swerveDrive.getPitch();
+        return m_swerveDrive.getPitch();
     }
 
     /**
-     * Add a fake vision reading for testing purposes.
+     * Add a fake m_vision reading for testing purposes.
      */
     public void addFakeVisionReading() {
-        swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
+        m_swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
     }
 
     /**
@@ -716,6 +717,6 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return {@link SwerveDrive}
      */
     public SwerveDrive getSwerveDrive() {
-        return swerveDrive;
+        return m_swerveDrive;
     }
 }

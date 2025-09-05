@@ -7,6 +7,22 @@ package frc.robot.subsystems.climber;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ClimberSubsystem extends SubsystemBase {
+  public enum ClimberState {
+    STOW(0),
+    EXTEND(0),
+    CLIMB(0);
+
+    private double m_angle;
+    
+    ClimberState(double angle) {
+      m_angle = angle;
+    }
+
+    public double getAngle() {
+      return m_angle;
+    }
+  }
+  
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem() {}
 
