@@ -40,7 +40,7 @@ public class RobotContainer {
       () -> m_driverController.getLeftY() * -1,
       () -> m_driverController.getLeftX() * -1)
       .withControllerRotationAxis(m_driverController::getRightX)
-      .deadband(OperatorConstants.DEADBAND)
+      .deadband(OperatorConstants.k_deadBand)
       .scaleTranslation(0.8)
       .allianceRelativeControl(true);
 
@@ -57,7 +57,7 @@ public class RobotContainer {
       () -> -m_driverController.getLeftX())
       .withControllerRotationAxis(() -> m_driverController.getRawAxis(
           2))
-      .deadband(OperatorConstants.DEADBAND)
+      .deadband(OperatorConstants.k_deadBand)
       .scaleTranslation(0.8)
       .allianceRelativeControl(true);
   // Derive the heading axis with math!

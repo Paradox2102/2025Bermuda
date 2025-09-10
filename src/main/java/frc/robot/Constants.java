@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
+
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import swervelib.math.Matter;
@@ -19,10 +23,10 @@ import swervelib.math.Matter;
 public final class Constants
 {
 
-  public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
-  public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
-  public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
-  public static final double MAX_SPEED  = Units.feetToMeters(14.5);
+  public static final double k_robotMass = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
+  public static final Matter k_chassis    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), k_robotMass);
+  public static final double k_loopTime  = 0.13; //s, 20ms + 110ms sprk max velocity lag
+  public static final double k_maxSpeed  = Units.feetToMeters(14.5);
   // Maximum speed of the robot in meters per second, used to limit acceleration.
 
 //  public static final class AutonConstants
@@ -36,37 +40,58 @@ public final class Constants
   {
 
     // Hold time on motor brakes when disabled
-    public static final double WHEEL_LOCK_TIME = 10; // seconds
+    public static final double k_wheelLockTime = 10; // seconds
+  }
+
+  public static final class IntakePivotConstants {
+    public static final double k_resetPosition = 0;
+    public static final double k_gearRatio = 1/0.53;
+    public static final double k_momentOfInertia = 0.181;
+    public static final double k_armLengthMeters = 0.5;
+    public static final double k_deadzone = 0;
+    public static final double k_f = 0;
+    public static final double k_p = 0;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+    public static final SparkFlexConfig pivotConfig = new SparkFlexConfig();
+    static {
+
+        pivotConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+        pivotConfig.inverted(false);
+        pivotConfig.absoluteEncoder
+              .positionConversionFactor(360)
+              .zeroOffset(k_resetPosition);
+    }
   }
 
   public static class OperatorConstants
   {
 
     // Joystick Deadband
-    public static final double DEADBAND        = 0.1;
-    public static final double LEFT_Y_DEADBAND = 0.1;
-    public static final double RIGHT_X_DEADBAND = 0.1;
-    public static final double TURN_CONSTANT    = 6;
+    public static final double k_deadBand        = 0.1;
+    public static final double k_leftYDeadBand = 0.1;
+    public static final double k_rightXDeadBand = 0.1;
+    public static final double k_turnConstant    = 6;
   }
 
   public static class canIDConstants {
-    int gyro = 0;
-    int fl_drive = 1;
-    int fl_turn = 2;
-    int fr_drive = 3;
-    int fr_turn = 4;
-    int bl_drive = 5;
-    int bl_turn = 6;
-    int br_drive = 7;
-    int br_turn = 8;
-    int elev_leader = 10;
-    int elev_follower = 11;
-    int arm = 12;
-    int claw = 13;
-    int intake_pivot = 20;
-    int intake_roller = 21;
-    int climber = 30;
-    int climber_follow = 31;
-    int cage_grabber = 32;
+    public static final int gyro = 0;
+    public static final int fl_drive = 1;
+    public static final int fl_turn = 2;
+    public static final int fr_drive = 3;
+    public static final int fr_turn = 4;
+    public static final int bl_drive = 5;
+    public static final int bl_turn = 6;
+    public static final int br_drive = 7;
+    public static final int br_turn = 8;
+    public static final int elev_leader = 10;
+    public static final int elev_follower = 11;
+    public static final int arm = 12;
+    public static final int claw = 13;
+    public static final int intake_pivot = 20;
+    public static final int intake_roller = 21;
+    public static final int climber = 30;
+    public static final int climber_follow = 31;
+    public static final int cage_grabber = 32;
   }
 }

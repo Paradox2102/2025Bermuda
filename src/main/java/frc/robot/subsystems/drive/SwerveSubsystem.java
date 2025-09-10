@@ -87,7 +87,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // objects being created.
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
         try {
-            m_swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.MAX_SPEED, startingPose);
+            m_swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.k_maxSpeed, startingPose);
             // Alternative method if you don't want to supply the conversion factor via JSON
             // files.
             // m_swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed,
@@ -128,7 +128,7 @@ public class SwerveSubsystem extends SubsystemBase {
     public SwerveSubsystem(SwerveDriveConfiguration driveCfg, SwerveControllerConfiguration controllerCfg) {
         m_swerveDrive = new SwerveDrive(driveCfg,
                 controllerCfg,
-                Constants.MAX_SPEED,
+                Constants.k_maxSpeed,
                 new Pose2d(new Translation2d(Meter.of(2), Meter.of(0)),
                         Rotation2d.fromDegrees(0)));
     }
@@ -629,7 +629,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 headingX,
                 headingY,
                 getHeading().getRadians(),
-                Constants.MAX_SPEED);
+                Constants.k_maxSpeed);
     }
 
     /**
@@ -649,7 +649,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 scaledInputs.getY(),
                 angle.getRadians(),
                 getHeading().getRadians(),
-                Constants.MAX_SPEED);
+                Constants.k_maxSpeed);
     }
 
     /**
