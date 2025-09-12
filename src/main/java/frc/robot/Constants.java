@@ -53,14 +53,39 @@ public final class Constants
     public static final double k_p = 0;
     public static final double k_i = 0;
     public static final double k_d = 0;
+
     public static final SparkFlexConfig pivotConfig = new SparkFlexConfig();
     static {
-
         pivotConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
         pivotConfig.inverted(false);
         pivotConfig.absoluteEncoder
               .positionConversionFactor(360)
               .zeroOffset(k_resetPosition);
+    }
+  }
+
+  public static class ElevatorConstants {
+    public static final double k_deadzone = 0;
+    public static final double k_posConversionFactor = 0;
+
+    public static final double k_p = 0;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+    //found by reca.lc linear mechanism model
+    public static final double k_g = 0.38;
+    public static final double k_v = 4.69;
+    public static final double k_a = 0.06;
+    public static final double k_maxAccel = 42.15;
+    public static final double k_maxVel = 2.45;
+
+    public static final SparkFlexConfig elevatorConfig = new SparkFlexConfig();
+    public static final SparkFlexConfig followConfig = new SparkFlexConfig();
+    static {
+      elevatorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      elevatorConfig.inverted(false);
+      elevatorConfig.encoder.positionConversionFactor(k_posConversionFactor).velocityConversionFactor(k_posConversionFactor);
+      followConfig.apply(elevatorConfig).inverted(true);
+      followConfig.follow(CANIDConstants.elev_leader, true);
     }
   }
 
@@ -74,7 +99,7 @@ public final class Constants
     public static final double k_turnConstant    = 6;
   }
 
-  public static class canIDConstants {
+  public static class CANIDConstants {
     public static final int gyro = 0;
     public static final int fl_drive = 1;
     public static final int fl_turn = 2;
