@@ -4,13 +4,26 @@
 
 package frc.robot.subsystems.climber;
 
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.CANIDConstants;
+import frc.robot.Constants.ClimberConstants;
 
 public class ClimberSubsystem extends SubsystemBase {
   public enum ClimberState {
     STOW(0),
-    EXTEND(0),
-    CLIMB(0);
+    EXTEND(90),
+    CLIMB(45);
 
     private double m_angle;
     
@@ -22,12 +35,40 @@ public class ClimberSubsystem extends SubsystemBase {
       return m_angle;
     }
   }
+
+  private SparkFlex m_climberMotor = new SparkFlex(CANIDConstants.climber, MotorType.kBrushless);
+  private SparkFlex m_climberFollow = new SparkFlex(CANIDConstants.climber_follow, MotorType.kBrushless);
+
+  private SparkAbsoluteEncoder m_encoder = m_climberMotor.getAbsoluteEncoder();
+  private SparkClosedLoopController m_pid = m_climberMotor.getClosedLoopController();
+
+  private ClimberState m_state = ClimberState.STOW;
   
   /** Creates a new ClimberSubsystem. */
-  public ClimberSubsystem() {}
+  public ClimberSubsystem() {
+    m_climberMotor.configure(ClimberConstants.climberConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_climberFollow.configure(ClimberConstants.climberConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  }
+
+  public double getPosition() {
+    return m_encoder.getPosition();
+  }
+
+  public Command setPosition(ClimberState state) {
+    return Commands.runOnce( () -> {
+    m_state = state;
+    m_pid.setReference(m_state.getAngle(), ControlType.kPosition);}, this);
+  }
+
+  public Command reset() {
+    return Commands.runOnce( () -> {
+    m_state = ClimberState.STOW;
+    m_pid.setReference(m_state.getAngle(), ControlType.kPosition);}, this);
+  }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Climber Angle", getPosition());
   }
 }

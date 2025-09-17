@@ -86,8 +86,7 @@ public final class Constants
       elevatorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
       elevatorConfig.inverted(false);
       elevatorConfig.encoder.positionConversionFactor(k_posConversionFactor).velocityConversionFactor(k_posConversionFactor);
-      followConfig.apply(elevatorConfig).inverted(true);
-      followConfig.follow(CANIDConstants.elev_leader, true);
+      followConfig.apply(elevatorConfig).follow(CANIDConstants.elev_leader, true);
     }
   }
 
@@ -111,6 +110,49 @@ public final class Constants
         armConfig.absoluteEncoder
               .positionConversionFactor(360)
               .zeroOffset(k_resetPosition);
+    }
+  }
+
+  public static class ClimberConstants {
+    public static final double k_deadzone = 0;
+    public static final double k_resetPosition = 0;
+
+    public static final double k_p = 0;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+
+    public static final SparkFlexConfig climberConfig = new SparkFlexConfig();
+    public static final SparkFlexConfig followConfig = new SparkFlexConfig();
+    static {
+      climberConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      climberConfig.inverted(false);
+      climberConfig.absoluteEncoder
+            .positionConversionFactor(360)
+            .zeroOffset(k_resetPosition);
+      climberConfig.closedLoop
+            .pid(k_p, k_i, k_d)
+            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+      followConfig.apply(climberConfig).follow(CANIDConstants.climber, true);
+    }
+  }
+
+  public static class CageCatcherConstants {
+    public static final double k_f = 0;
+    public static final double k_p = 0;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+
+    public static final double k_inSpeed = 0;
+    public static final double k_outSpeed = 0;
+
+    public static final SparkFlexConfig cageConfig = new SparkFlexConfig();
+    static {
+      cageConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      cageConfig.inverted(false);
+      cageConfig.closedLoop
+            .pid(k_p, k_i, k_d)
+            .velocityFF(k_f)
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     }
   }
 

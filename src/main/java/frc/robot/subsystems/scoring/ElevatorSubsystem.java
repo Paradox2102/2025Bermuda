@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -31,28 +32,22 @@ import frc.robot.Constants.ElevatorConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
-    STOW(0, 0),
-    HANDOFF(0, 0),
-    L2(0,0),
-    L3(0,0),
-    L4(0,0),
-    GROUND_ALGAE(0,0),
-    ALGAE_LOW(0,0),
-    ALGAE_HIGH(0,0),
-    PROCESSOR(0,0),
-    NET(0,0),
-    LOLLIPOP(0, 0);
+    STOW(0),
+    HANDOFF(0),
+    L2(0),
+    L3(0),
+    L4(0),
+    GROUND_ALGAE(0),
+    ALGAE_LOW(0),
+    ALGAE_HIGH(0),
+    PROCESSOR(0),
+    NET(0),
+    LOLLIPOP(0);
 
-    private double m_armAngle;
     private double m_height;
     
-    ElevatorState(double height, double angle) {
+    ElevatorState(double height) {
       m_height = height;
-      m_armAngle = angle;
-    }
-
-    public double getAngle() {
-      return m_armAngle;
     }
 
     public double getHeight() {
@@ -110,6 +105,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     return Commands.runOnce(() -> {m_state = pos;}, this);
   }
 
+  public Command reset() {
+    return Commands.runOnce(() -> {m_state = ElevatorState.STOW;}, this);
+  }
+
   public ElevatorState getSetPoint() {
     return m_state;
   }
@@ -126,6 +125,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         (m_feedforward.calculate(m_pid.getSetpoint().velocity) / RoboRioSim.getVInVoltage());
     }
     m_leadMotor.set(m_output);
+    SmartDashboard.putNumber("Elev Height", getPosition());
   }
 
   public void simulationPeriodic() {
