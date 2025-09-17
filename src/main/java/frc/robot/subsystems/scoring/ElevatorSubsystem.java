@@ -91,11 +91,19 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public double getPosition() {
-    return m_encoder.getPosition();
+    if(RobotBase.isReal()){
+      return m_encoder.getPosition();
+    } else {
+      return m_simHeight;
+    }
   }
 
   public double getVelocity() {
-    return m_encoder.getVelocity();
+    if(RobotBase.isReal()){
+      return m_encoder.getVelocity();
+    } else {
+      return m_elevatorSim.getVelocityMetersPerSecond();
+    }
   }
 
   public Command setPosition(ElevatorState pos) {

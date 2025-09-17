@@ -45,10 +45,12 @@ public final class Constants
 
   public static final class IntakePivotConstants {
     public static final double k_resetPosition = 0;
-    public static final double k_gearRatio = 1/0.53;
-    public static final double k_momentOfInertia = 0.181;
-    public static final double k_armLengthMeters = 0.5;
     public static final double k_deadzone = 0;
+
+    public static final double k_gearRatio = 11.67;
+    public static final double k_momentOfInertia = 0.485;
+    public static final double k_armLengthMeters = 0.5;
+
     public static final double k_f = 0;
     public static final double k_p = 0;
     public static final double k_i = 0;
@@ -86,6 +88,29 @@ public final class Constants
       elevatorConfig.encoder.positionConversionFactor(k_posConversionFactor).velocityConversionFactor(k_posConversionFactor);
       followConfig.apply(elevatorConfig).inverted(true);
       followConfig.follow(CANIDConstants.elev_leader, true);
+    }
+  }
+
+  public static class ArmConstants {
+    public static final double k_deadzone = 0;
+    public static final double k_resetPosition = 0;
+
+    public static final double k_gearRatio = 27;
+    public static final double k_momentOfInertia = 0.308;
+    public static final double k_armLengthMeters = 0.543;
+
+    public static final double k_p = 0;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+    public static final double k_f = 0;
+
+    public static final SparkFlexConfig armConfig = new SparkFlexConfig();
+    static {
+        armConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+        armConfig.inverted(false);
+        armConfig.absoluteEncoder
+              .positionConversionFactor(360)
+              .zeroOffset(k_resetPosition);
     }
   }
 
