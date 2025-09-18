@@ -4,14 +4,58 @@
 
 package frc.robot.subsystems.scoring;
 
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.CANIDConstants;
+import frc.robot.Constants.ClawConstants;
 
 public class ClawSubsystem extends SubsystemBase {
-  /** Creates a new ClawSubsystem. */
-  public ClawSubsystem() {}
+  private SparkFlex m_clawMotor = new SparkFlex(CANIDConstants.intake_roller, MotorType.kBrushless);
+  private RelativeEncoder m_encoder = m_clawMotor.getEncoder();
+  private SparkClosedLoopController m_pid = m_clawMotor.getClosedLoopController();
+
+  public final Trigger hasCoral = new Trigger(
+      () -> getCurrentDraw() < ClawConstants.k_stallCurrent && getSpeed() >= ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed)
+      .debounce(.25, DebounceType.kBoth);
+
+  /** Creates a new RollerSubsystem. */
+  public ClawSubsystem() {
+    m_clawMotor.configure(ClawConstants.clawConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  }
+
+  public double getSpeed() {
+    return m_encoder.getVelocity();
+  }
+
+  public double getCurrentDraw() {
+    return m_clawMotor.getAppliedOutput();
+  }
+
+  public Command run(boolean in) {
+    return Commands.runOnce(
+      () -> {m_pid.setReference(in ? ClawConstants.k_inSpeed : ClawConstants.k_outSpeed, ControlType.kVelocity);}, this);
+  }
+
+  public Command stop() {
+    return Commands.runOnce(
+      () -> {m_pid.setReference(0, ControlType.kVelocity);}, this);
+  }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Claw Speed", getSpeed());
   }
 }

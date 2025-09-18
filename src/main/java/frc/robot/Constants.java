@@ -156,6 +156,52 @@ public final class Constants
     }
   }
 
+  public static class IntakeRollerConstants {
+    public static final double k_f = 0;
+    public static final double k_p = 0;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+
+    public static final double k_stallCurrent = 0;
+    public static final double k_slowSpeed = 0;
+
+    public static final double k_inSpeed = 0;
+    public static final double k_outSpeed = 0;
+
+    public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
+    static {
+      rollerConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      rollerConfig.inverted(false);
+      rollerConfig.closedLoop
+            .pid(k_p, k_i, k_d)
+            .velocityFF(k_f)
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    }
+  }
+
+  public static class ClawConstants {
+    public static final double k_f = 0;
+    public static final double k_p = 0;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+
+    public static final double k_stallCurrent = 0;
+    public static final double k_slowSpeed = 0;
+
+    public static final double k_inSpeed = 0;
+    public static final double k_outSpeed = 0;
+
+    public static final SparkFlexConfig clawConfig = new SparkFlexConfig();
+    static {
+      clawConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      clawConfig.inverted(false);
+      clawConfig.closedLoop
+            .pid(k_p, k_i, k_d)
+            .velocityFF(k_f)
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    }
+  }
+
   public static class OperatorConstants
   {
 
