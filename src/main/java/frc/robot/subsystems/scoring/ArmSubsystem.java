@@ -63,8 +63,11 @@ public class ArmSubsystem extends SubsystemBase {
   private PIDController m_pid = new PIDController(Constants.ArmConstants.k_p, Constants.ArmConstants.k_i, Constants.ArmConstants.k_d);
   private double m_output = 0;
 
+  private boolean m_invert = false;
+  private double m_setPoint = m_state.getAngle();
+
   public Trigger atPosition = new Trigger(
-    () -> Math.abs(getAngle() - m_state.getAngle()) < Constants.ArmConstants.k_deadzone);
+    () -> Math.abs(getAngle() - m_setPoint) < Constants.ArmConstants.k_deadzone);
   /** Creates a new ArmSubsystem. */
   public ArmSubsystem() {
     m_armMotor.configure(ArmConstants.armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -79,21 +82,35 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public Command setPosition(ArmState pos) {
-    return Commands.runOnce(() -> {m_state = pos;}, this);
+    return Commands.runOnce(() -> {
+      m_state = pos;
+      m_setPoint = m_state.getAngle();
+    }, this);
+  }
+
+  public Command scoreReef() {
+    return Commands.runOnce(() -> {
+      m_setPoint = m_state.getAngle() - ArmConstants.k_dunkAngle;
+    }, this);
   }
 
   public Command reset() {
     return Commands.runOnce(() -> {m_state = ArmState.STOW;}, this);
   }
 
-  public ArmState getSetPoint(){
-    return m_state;
+  public double invertPos(double angle) {
+    double normAngle = -(angle - 90);
+    return (2 * normAngle - 360) + 90;
+  }
+
+  public double getSetPoint() {
+    return m_invert ? invertPos(m_setPoint) : m_setPoint;
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_output = m_pid.calculate(getAngle(), m_state.getAngle()) + Constants.ArmConstants.k_f * Math.cos(Math.toRadians(getAngle()));
+    m_output = m_pid.calculate(getAngle(), m_invert ? invertPos(m_setPoint) : m_setPoint) + Constants.ArmConstants.k_f * Math.cos(Math.toRadians(getAngle()));
     m_armMotor.set(m_output);
     SmartDashboard.putNumber("Arm Angle", getAngle());
   }

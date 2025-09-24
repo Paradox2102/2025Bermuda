@@ -26,9 +26,10 @@ public class ClawSubsystem extends SubsystemBase {
   private RelativeEncoder m_encoder = m_clawMotor.getEncoder();
   private SparkClosedLoopController m_pid = m_clawMotor.getClosedLoopController();
 
-  public final Trigger hasCoral = new Trigger(
+  public final Trigger pickCoralAlgae = new Trigger(
       () -> getCurrentDraw() < ClawConstants.k_stallCurrent && getSpeed() >= ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed)
       .debounce(.25, DebounceType.kBoth);
+  private boolean m_hasGamePiece = false;
 
   /** Creates a new RollerSubsystem. */
   public ClawSubsystem() {
@@ -43,14 +44,36 @@ public class ClawSubsystem extends SubsystemBase {
     return m_clawMotor.getAppliedOutput();
   }
 
-  public Command run(boolean in) {
-    return Commands.runOnce(
-      () -> {m_pid.setReference(in ? ClawConstants.k_inSpeed : ClawConstants.k_outSpeed, ControlType.kVelocity);}, this);
+  public boolean hasGamePiece() {
+    return m_hasGamePiece;
   }
 
-  public Command stop() {
+
+  public void run(boolean in) {
+    m_pid.setReference(in ? ClawConstants.k_inSpeed : ClawConstants.k_outSpeed, ControlType.kVelocity);
+  }
+
+  public Command intake() {
+    return Commands.run(() -> {
+      run(true);
+    }, this).until(pickCoralAlgae);
+  }
+
+  public Command eject() {
+    return Commands.run(() -> {
+      run(false);
+    },this);
+  }
+
+  public Command hold(boolean algae) {
     return Commands.runOnce(
-      () -> {m_pid.setReference(0, ControlType.kVelocity);}, this);
+      () -> {
+      if(algae) {
+        run(true); 
+      } else {
+        m_pid.setReference(0, ControlType.kVoltage);
+      }
+      }, this);
   }
 
   @Override

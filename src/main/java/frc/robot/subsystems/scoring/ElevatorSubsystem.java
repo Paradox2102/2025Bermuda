@@ -29,29 +29,36 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
-    STOW(0),
-    HANDOFF(0),
-    L2(0),
-    L3(0),
-    L4(0),
-    GROUND_ALGAE(0),
-    ALGAE_LOW(0),
-    ALGAE_HIGH(0),
-    PROCESSOR(0),
-    NET(0),
-    LOLLIPOP(0);
+    STOW(0, ArmState.STOW),
+    HANDOFF(0, ArmState.HANDOFF),
+    L2(0, ArmState.L2),
+    L3(0, ArmState.L3),
+    L4(0, ArmState.L4),
+    GROUND_ALGAE(0, ArmState.GROUND_ALGAE),
+    ALGAE_LOW(0, ArmState.ALGAE_LOW),
+    ALGAE_HIGH(0, ArmState.ALGAE_HIGH),
+    PROCESSOR(0, ArmState.PROCESSOR),
+    NET(0, ArmState.NET),
+    LOLLIPOP(0, ArmState.LOLLIPOP);
 
     private double m_height;
+    private ArmState m_armPos;
     
-    ElevatorState(double height) {
+    ElevatorState(double height, ArmState armPos) {
       m_height = height;
+      m_armPos = armPos;
     }
 
     public double getHeight() {
       return m_height;
+    }
+
+    public ArmState getArmPos() {
+      return m_armPos;
     }
   }
 
@@ -72,6 +79,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private DigitalInput m_limitSwitch = new DigitalInput(0);
 
   private ElevatorState m_state = ElevatorState.STOW;
+  private double m_setPoint = m_state.getHeight();
   
   public Trigger atPosition = new Trigger(
     () -> Math.abs(getPosition() - m_state.getHeight()) < ElevatorConstants.k_deadzone);
@@ -102,21 +110,30 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command setPosition(ElevatorState pos) {
-    return Commands.runOnce(() -> {m_state = pos;}, this);
+    return Commands.runOnce(() -> {
+      m_state = pos;
+      m_setPoint = m_state.getHeight();
+    }, this);
+  }
+
+  public Command scoreCoral() {
+    return Commands.runOnce(() -> {
+      m_setPoint = m_state.getHeight() - ElevatorConstants.k_dunkHeight;
+    }, this);
   }
 
   public Command reset() {
     return Commands.runOnce(() -> {m_state = ElevatorState.STOW;}, this);
   }
 
-  public ElevatorState getSetPoint() {
-    return m_state;
+  public double getSetPoint() {
+    return m_setPoint;
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_pid.setGoal(m_state.getHeight());
+    m_pid.setGoal(m_setPoint);
     if(RobotBase.isReal()) {
       m_output = m_pid.calculate(getPosition()) + 
         (m_feedforward.calculate(m_pid.getSetpoint().velocity) / RobotController.getBatteryVoltage());

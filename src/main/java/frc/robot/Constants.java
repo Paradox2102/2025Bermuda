@@ -80,6 +80,8 @@ public final class Constants
     public static final double k_maxAccel = 42.15;
     public static final double k_maxVel = 2.45;
 
+    public static final double k_dunkHeight = 0;
+
     public static final SparkFlexConfig elevatorConfig = new SparkFlexConfig();
     public static final SparkFlexConfig followConfig = new SparkFlexConfig();
     static {
@@ -102,6 +104,8 @@ public final class Constants
     public static final double k_i = 0;
     public static final double k_d = 0;
     public static final double k_f = 0;
+
+    public static final double k_dunkAngle = 0;
 
     public static final SparkFlexConfig armConfig = new SparkFlexConfig();
     static {

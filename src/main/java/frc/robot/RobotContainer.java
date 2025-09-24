@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,11 +14,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.climber.CageCatchSubsystem;
+import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.SwerveSubsystem;
+import frc.robot.subsystems.intake.IntakePivotSubsystem;
+import frc.robot.subsystems.intake.IntakeRollerSubsystem;
+import frc.robot.subsystems.scoring.ArmSubsystem;
+import frc.robot.subsystems.scoring.ClawSubsystem;
+import frc.robot.subsystems.scoring.ElevatorSubsystem;
+
 import java.io.File;
 import swervelib.SwerveInputStream;
 
@@ -31,6 +38,14 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
       "swerve"));
+  private IntakePivotSubsystem m_pivotSubsystem = new IntakePivotSubsystem();
+  private IntakeRollerSubsystem m_rollerSubsystem = new IntakeRollerSubsystem();
+  private ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
+  private ArmSubsystem m_armSubsystem = new ArmSubsystem();
+  private ClawSubsystem m_clawSubsystem = new ClawSubsystem();
+  private ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
+  private CageCatchSubsystem m_cageSubsystem = new CageCatchSubsystem();
+  private Superstructure m_superstructure = new Superstructure(m_pivotSubsystem, m_rollerSubsystem, m_elevatorSubsystem, m_armSubsystem, m_clawSubsystem, m_climberSubsystem, m_cageSubsystem);
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled
@@ -116,6 +131,8 @@ public class RobotContainer {
     } else {
       m_swerveSubsystem.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     }
+
+    m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
 
     if (Robot.isSimulation()) {
       Pose2d target = new Pose2d(new Translation2d(1, 4),

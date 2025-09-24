@@ -26,9 +26,10 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   private RelativeEncoder m_encoder = m_rollerMotor.getEncoder();
   private SparkClosedLoopController m_pid = m_rollerMotor.getClosedLoopController();
 
-  public final Trigger hasCoral = new Trigger(
+  public final Trigger pickCoral = new Trigger(
       () -> getCurrentDraw() < IntakeRollerConstants.k_stallCurrent && getSpeed() >= IntakeRollerConstants.k_inSpeed - IntakeRollerConstants.k_slowSpeed)
       .debounce(.25, DebounceType.kBoth);
+  private boolean m_hasCoral = false;
 
   /** Creates a new RollerSubsystem. */
   public IntakeRollerSubsystem() {
@@ -43,19 +44,45 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     return m_rollerMotor.getAppliedOutput();
   }
 
-  public Command run(boolean in) {
-    return Commands.runOnce(
-      () -> {m_pid.setReference(in ? IntakeRollerConstants.k_inSpeed : IntakeRollerConstants.k_outSpeed, ControlType.kVelocity);}, this);
+  public boolean hasGamePiece() {
+    return m_hasCoral;
   }
 
-  public Command stop() {
-    return Commands.runOnce(
-      () -> {m_pid.setReference(0, ControlType.kVelocity);}, this);
+  private void run(boolean in) {
+    m_pid.setReference(in ? IntakeRollerConstants.k_inSpeed : IntakeRollerConstants.k_outSpeed, ControlType.kVelocity);
+  }
+
+  public Command intake() {
+    return Commands.run(() -> {
+      run(true);
+    }, this).until(pickCoral);
+  }
+
+  public Command eject() {
+    return Commands.startEnd(() -> {
+      run(false);
+    }, () -> {
+      m_hasCoral = false;
+    }, this);
+  }
+
+  public Command hold() {
+    return Commands.run(
+      () -> {
+        if(m_hasCoral) {
+          run(true); 
+        } else {
+          m_pid.setReference(0, ControlType.kVoltage);
+        }
+      }, this);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("Roller Speed", getSpeed());
+    if(pickCoral.getAsBoolean()){
+      m_hasCoral = true;
+    }
   }
 }
