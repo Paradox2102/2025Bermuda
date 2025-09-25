@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.CANIDConstants;
 import frc.robot.Constants.ClimberConstants;
 
@@ -43,6 +44,9 @@ public class ClimberSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_pid = m_climberMotor.getClosedLoopController();
 
   private ClimberState m_state = ClimberState.STOW;
+
+  public Trigger atPosition = new Trigger(() ->
+    Math.abs(getPosition() - m_state.getAngle()) < ClimberConstants.k_deadzone);
   
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem() {
@@ -55,9 +59,9 @@ public class ClimberSubsystem extends SubsystemBase {
   }
 
   public Command setPosition(ClimberState state) {
-    return Commands.runOnce( () -> {
+    return Commands.run( () -> {
     m_state = state;
-    m_pid.setReference(m_state.getAngle(), ControlType.kPosition);}, this);
+    m_pid.setReference(m_state.getAngle(), ControlType.kPosition);}, this).until(atPosition);
   }
 
   public Command reset() {

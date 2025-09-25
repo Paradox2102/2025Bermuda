@@ -25,6 +25,7 @@ public class ClawSubsystem extends SubsystemBase {
   private SparkFlex m_clawMotor = new SparkFlex(CANIDConstants.intake_roller, MotorType.kBrushless);
   private RelativeEncoder m_encoder = m_clawMotor.getEncoder();
   private SparkClosedLoopController m_pid = m_clawMotor.getClosedLoopController();
+  private boolean m_isAlgae = false;
 
   public final Trigger pickCoralAlgae = new Trigger(
       () -> getCurrentDraw() < ClawConstants.k_stallCurrent && getSpeed() >= ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed)
@@ -65,10 +66,16 @@ public class ClawSubsystem extends SubsystemBase {
     },this);
   }
 
-  public Command hold(boolean algae) {
+  public Command setGamePiece(boolean algae){
+    return Commands.runOnce(() -> {
+      m_isAlgae = algae;
+    }, this);
+  }
+
+  public Command hold() {
     return Commands.runOnce(
       () -> {
-      if(algae) {
+      if(m_isAlgae) {
         run(true); 
       } else {
         m_pid.setReference(0, ControlType.kVoltage);

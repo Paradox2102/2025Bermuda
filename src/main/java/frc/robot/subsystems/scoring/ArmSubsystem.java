@@ -85,12 +85,18 @@ public class ArmSubsystem extends SubsystemBase {
     return Commands.runOnce(() -> {
       m_state = pos;
       m_setPoint = m_state.getAngle();
-    }, this);
+    }, this).until(atPosition);
   }
 
   public Command scoreReef() {
     return Commands.runOnce(() -> {
       m_setPoint = m_state.getAngle() - ArmConstants.k_dunkAngle;
+    }, this);
+  }
+
+  public Command switchSides(boolean invert) {
+    return Commands.runOnce(() -> {
+      m_invert = invert;
     }, this);
   }
 

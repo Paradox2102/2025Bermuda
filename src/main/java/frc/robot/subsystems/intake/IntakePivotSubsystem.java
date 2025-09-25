@@ -73,7 +73,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
   }
 
   public Command setPosition(IntakeState pos) {
-    return Commands.runOnce(() -> {m_state = pos;}, this);
+    return Commands.run(() -> {m_state = pos;}, this).until(atPosition);
   }
 
   public Command reset() {

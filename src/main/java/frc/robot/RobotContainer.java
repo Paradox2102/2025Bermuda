@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.RobotState;
 import frc.robot.subsystems.climber.CageCatchSubsystem;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.SwerveSubsystem;
@@ -26,6 +27,7 @@ import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.subsystems.scoring.ArmSubsystem;
 import frc.robot.subsystems.scoring.ClawSubsystem;
 import frc.robot.subsystems.scoring.ElevatorSubsystem;
+import frc.robot.subsystems.scoring.ElevatorSubsystem.ElevatorState;
 
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -46,6 +48,8 @@ public class RobotContainer {
   private ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private CageCatchSubsystem m_cageSubsystem = new CageCatchSubsystem();
   private Superstructure m_superstructure = new Superstructure(m_pivotSubsystem, m_rollerSubsystem, m_elevatorSubsystem, m_armSubsystem, m_clawSubsystem, m_climberSubsystem, m_cageSubsystem);
+
+  ElevatorState m_algae_level = ElevatorState.ALGAE_HIGH;
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled
@@ -133,6 +137,7 @@ public class RobotContainer {
     }
 
     m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
+    m_clawSubsystem.setDefaultCommand(m_clawSubsystem.hold());
 
     if (Robot.isSimulation()) {
       Pose2d target = new Pose2d(new Translation2d(1, 4),
@@ -147,6 +152,20 @@ public class RobotContainer {
               0,
               new Constraints(Units.degreesToRadians(360),
                   Units.degreesToRadians(180))));
+
+    }
+    m_superstructure.setDefaultCommand(m_superstructure.stow());
+    //Bind different commands to buttons depending on whether or not the robot holds a coral
+    if(m_superstructure.getState() == RobotState.INTAKE) {
+        m_driverController.leftTrigger().toggleOnTrue(m_superstructure.groundAlgae());
+        m_driverController.leftBumper().toggleOnTrue(m_superstructure.goToLevel(m_algae_level).andThen(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true))));
+        m_driverController.a().onTrue(m_superstructure.goToLevel(ElevatorState.NET).andThen(m_superstructure.TriggerSequence(m_driverController.a()).andThen(m_superstructure.scoreAlgaeReset())));
+        m_driverController.y().onTrue(m_superstructure.goToLevel(ElevatorState.PROCESSOR).andThen(m_superstructure.TriggerSequence(m_driverController.y()).andThen(m_superstructure.scoreAlgaeReset())));
+        m_driverController.rightTrigger().toggleOnTrue(m_superstructure.groundCoral());
+        m_driverController.rightBumper().onTrue(m_superstructure.intakeL1());
+        m_driverController.b().onTrue(m_superstructure.deployClimber().andThen(m_superstructure.TriggerSequence(m_driverController.b()).andThen(m_superstructure.climb())));
+        m_driverController.x().onTrue(m_superstructure.goToHandoff().andThen(m_superstructure.TriggerSequence(m_driverController.x()).andThen(m_superstructure.handoff())));
+    } else {
 
     }
   }

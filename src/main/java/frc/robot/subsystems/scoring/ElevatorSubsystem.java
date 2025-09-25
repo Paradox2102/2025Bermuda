@@ -113,7 +113,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     return Commands.runOnce(() -> {
       m_state = pos;
       m_setPoint = m_state.getHeight();
-    }, this);
+    }, this).until(atPosition);
   }
 
   public Command scoreCoral() {
