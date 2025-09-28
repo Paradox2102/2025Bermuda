@@ -80,16 +80,20 @@ public class Superstructure extends SubsystemBase {
     return new SequentialCommandGroup(RunForTime(m_armSubsystem.scoreReef().alongWith(m_elevatorSubsystem.scoreCoral()), 1), SwitchModes(RobotState.INTAKE), m_elevatorSubsystem.setPosition(ElevatorState.STOW).alongWith(m_armSubsystem.setPosition(ArmState.STOW)));
   }
 
-  public SequentialCommandGroup clawL1() {
-    return new SequentialCommandGroup(null);
+  public SequentialCommandGroup scoreLevel(ElevatorState level, Trigger trigger, Boolean left) {
+    return new SequentialCommandGroup(goToLevel(level), TriggerSequence(trigger), scoreCoralResetElev());
+  }
+
+  public SequentialCommandGroup clawL1(Trigger trigger) {
+    return new SequentialCommandGroup(goToLevel(ElevatorState.L1), TriggerSequence(trigger), m_clawSubsystem.eject(), SwitchModes(RobotState.INTAKE), goToLevel(ElevatorState.STOW));
   }
 
   public ParallelDeadlineGroup groundCoral() {
     return new ParallelDeadlineGroup(m_rollerSubsystem.intake(), new ParallelCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.STOW), m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.INTAKE)));
   }
 
-  public SequentialCommandGroup intakeL1() {
-    return new SequentialCommandGroup(null);
+  public SequentialCommandGroup intakeL1(Trigger trigger) {
+    return new SequentialCommandGroup(m_pivotSubsystem.setPosition(IntakeState.L1), TriggerSequence(trigger), m_rollerSubsystem.eject());
   }
 
   public SequentialCommandGroup goToHandoff() {

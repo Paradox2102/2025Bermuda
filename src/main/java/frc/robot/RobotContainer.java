@@ -162,11 +162,17 @@ public class RobotContainer {
         m_driverController.a().onTrue(m_superstructure.goToLevel(ElevatorState.NET).andThen(m_superstructure.TriggerSequence(m_driverController.a()).andThen(m_superstructure.scoreAlgaeReset())));
         m_driverController.y().onTrue(m_superstructure.goToLevel(ElevatorState.PROCESSOR).andThen(m_superstructure.TriggerSequence(m_driverController.y()).andThen(m_superstructure.scoreAlgaeReset())));
         m_driverController.rightTrigger().toggleOnTrue(m_superstructure.groundCoral());
-        m_driverController.rightBumper().onTrue(m_superstructure.intakeL1());
+        m_driverController.rightBumper().onTrue(m_superstructure.intakeL1(m_driverController.rightBumper()));
         m_driverController.b().onTrue(m_superstructure.deployClimber().andThen(m_superstructure.TriggerSequence(m_driverController.b()).andThen(m_superstructure.climb())));
         m_driverController.x().onTrue(m_superstructure.goToHandoff().andThen(m_superstructure.TriggerSequence(m_driverController.x()).andThen(m_superstructure.handoff())));
     } else {
-
+        m_driverController.leftTrigger().onTrue(m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.leftTrigger(), true));
+        m_driverController.leftBumper().onTrue(m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.leftBumper(), true));
+        m_driverController.a().onTrue(m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.a(), true));
+        m_driverController.y().onTrue(m_superstructure.clawL1(m_driverController.y()));
+        m_driverController.rightTrigger().onTrue(m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.rightTrigger(), false));
+        m_driverController.rightBumper().onTrue(m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.rightBumper(), false));
+        m_driverController.b().onTrue(m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.b(), false));
     }
   }
 

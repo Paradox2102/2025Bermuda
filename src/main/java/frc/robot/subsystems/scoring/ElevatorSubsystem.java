@@ -35,6 +35,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW),
     HANDOFF(0, ArmState.HANDOFF),
+    L1(0, ArmState.L1),
     L2(0, ArmState.L2),
     L3(0, ArmState.L3),
     L4(0, ArmState.L4),
