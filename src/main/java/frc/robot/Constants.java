@@ -171,6 +171,7 @@ public final class Constants
 
     public static final double k_inSpeed = 0;
     public static final double k_outSpeed = 0;
+    public static final double k_stallSpeed = 0;
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
     static {

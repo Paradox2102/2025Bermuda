@@ -85,7 +85,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Trigger atPosition = new Trigger(
     () -> Math.abs(getPosition() - m_state.getHeight()) < ElevatorConstants.k_deadzone);
 
-  public Trigger limit = new Trigger(
+  //TODO: change to atBottom
+  public Trigger atBottom = new Trigger(
     () -> m_limitSwitch.get());
 
   /** Creates a new ElevatorSubsystem. */

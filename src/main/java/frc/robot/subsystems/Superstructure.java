@@ -69,65 +69,75 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup stow() {
-    return new SequentialCommandGroup(new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.STOW)), m_elevatorSubsystem.setPosition(ElevatorState.STOW));
+    return SequentialWithRequirements(new SequentialCommandGroup(new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.STOW)), m_elevatorSubsystem.setPosition(ElevatorState.STOW)));
   }
 
   public SequentialCommandGroup goToLevel(ElevatorState state) {
-    return new SequentialCommandGroup(m_pivotSubsystem.setPosition(IntakeState.STOW), m_elevatorSubsystem.setPosition(state).alongWith(m_armSubsystem.setPosition(state.getArmPos())));
+    return SequentialWithRequirements(new SequentialCommandGroup(m_pivotSubsystem.setPosition(IntakeState.STOW), m_elevatorSubsystem.setPosition(state).alongWith(m_armSubsystem.setPosition(state.getArmPos()))));
   }
 
   public SequentialCommandGroup scoreCoralResetElev() {
-    return new SequentialCommandGroup(RunForTime(m_armSubsystem.scoreReef().alongWith(m_elevatorSubsystem.scoreCoral()), 1), SwitchModes(RobotState.INTAKE), m_elevatorSubsystem.setPosition(ElevatorState.STOW).alongWith(m_armSubsystem.setPosition(ArmState.STOW)));
+    return SequentialWithRequirements(new SequentialCommandGroup(RunForTime(m_armSubsystem.scoreCoral().alongWith(m_elevatorSubsystem.scoreCoral()), 1), SwitchModes(RobotState.INTAKE), m_elevatorSubsystem.setPosition(ElevatorState.STOW).alongWith(m_armSubsystem.setPosition(ArmState.STOW))));
   }
 
   public SequentialCommandGroup scoreLevel(ElevatorState level, Trigger trigger, Boolean left) {
-    return new SequentialCommandGroup(goToLevel(level), TriggerSequence(trigger), scoreCoralResetElev());
+    return SequentialWithRequirements(new SequentialCommandGroup(goToLevel(level), TriggerSequence(trigger), scoreCoralResetElev()));
   }
 
   public SequentialCommandGroup clawL1(Trigger trigger) {
-    return new SequentialCommandGroup(goToLevel(ElevatorState.L1), TriggerSequence(trigger), m_clawSubsystem.eject(), SwitchModes(RobotState.INTAKE), goToLevel(ElevatorState.STOW));
+    return SequentialWithRequirements(new SequentialCommandGroup(goToLevel(ElevatorState.L1), TriggerSequence(trigger), m_clawSubsystem.eject(), SwitchModes(RobotState.INTAKE), goToLevel(ElevatorState.STOW)));
   }
 
   public ParallelDeadlineGroup groundCoral() {
-    return new ParallelDeadlineGroup(m_rollerSubsystem.intake(), new ParallelCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.STOW), m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.INTAKE)));
+    return DeadlineWithRequirements(new ParallelDeadlineGroup(m_rollerSubsystem.intake(), new ParallelCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.STOW), m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.INTAKE))));
   }
 
   public SequentialCommandGroup intakeL1(Trigger trigger) {
-    return new SequentialCommandGroup(m_pivotSubsystem.setPosition(IntakeState.L1), TriggerSequence(trigger), m_rollerSubsystem.eject());
+    return SequentialWithRequirements(new SequentialCommandGroup(m_pivotSubsystem.setPosition(IntakeState.L1), TriggerSequence(trigger), m_rollerSubsystem.eject()));
   }
 
   public SequentialCommandGroup goToHandoff() {
-    return new SequentialCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF), new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.HANDOFF), m_pivotSubsystem.setPosition(IntakeState.HANDOFF)));
+    return SequentialWithRequirements(new SequentialCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF), new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.HANDOFF), m_pivotSubsystem.setPosition(IntakeState.HANDOFF))));
   }
 
   public ParallelDeadlineGroup handoff() {
-    return new ParallelDeadlineGroup(m_clawSubsystem.intake().andThen(SwitchModes(RobotState.CORAL)), m_rollerSubsystem.eject());
+    return DeadlineWithRequirements(new ParallelDeadlineGroup(m_clawSubsystem.intake().andThen(SwitchModes(RobotState.CORAL)), m_rollerSubsystem.eject()));
   }
 
   public ParallelDeadlineGroup groundAlgae() {
-    return new ParallelDeadlineGroup(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true)), new ParallelCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.GROUND_ALGAE), m_pivotSubsystem.setPosition(IntakeState.STOW)).andThen(m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.GROUND_ALGAE))));
+    return DeadlineWithRequirements(new ParallelDeadlineGroup(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true)), new ParallelCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.GROUND_ALGAE), m_pivotSubsystem.setPosition(IntakeState.STOW)).andThen(m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.GROUND_ALGAE)))));
   }
 
   public SequentialCommandGroup scoreAlgaeReset() {
-    return new SequentialCommandGroup(RunForTime(m_clawSubsystem.eject(),1), m_clawSubsystem.setGamePiece(false), m_elevatorSubsystem.setPosition(ElevatorState.STOW).alongWith(m_armSubsystem.setPosition(ArmState.STOW)));
+    return SequentialWithRequirements(new SequentialCommandGroup(RunForTime(m_clawSubsystem.eject(),1), m_clawSubsystem.setGamePiece(false), m_elevatorSubsystem.setPosition(ElevatorState.STOW).alongWith(m_armSubsystem.setPosition(ArmState.STOW))));
   }
 
   public SequentialCommandGroup deployClimber() {
-    return new SequentialCommandGroup(new ParallelCommandGroup(m_pivotSubsystem.setPosition(IntakeState.INTAKE), m_armSubsystem.setPosition(ArmState.STOW), m_elevatorSubsystem.setPosition(ElevatorState.STOW)), m_cageSubsystem.run(true), m_climberSubsystem.setPosition(ClimberState.EXTEND));
+    return SequentialWithRequirements(new SequentialCommandGroup(new ParallelCommandGroup(m_pivotSubsystem.setPosition(IntakeState.INTAKE), m_armSubsystem.setPosition(ArmState.STOW), m_elevatorSubsystem.setPosition(ElevatorState.STOW)), m_cageSubsystem.run(true), m_climberSubsystem.setPosition(ClimberState.EXTEND)));
   }
 
   public SequentialCommandGroup climb() {
-    return new SequentialCommandGroup(m_climberSubsystem.setPosition(ClimberState.CLIMB), m_cageSubsystem.stop());
+    return SequentialWithRequirements(new SequentialCommandGroup(m_climberSubsystem.setPosition(ClimberState.CLIMB), m_cageSubsystem.stop()));
   }
 
   private Command SwitchModes(RobotState state) {
     return Commands.runOnce(() -> {
       m_state = state;
-    }, this);
+    });
   }
 
   public Command TriggerSequence(Trigger trigger) {
     return Commands.run(null).until(trigger);
+  }
+
+  public SequentialCommandGroup SequentialWithRequirements(SequentialCommandGroup group){
+    group.addRequirements(this);
+    return group;
+  }
+
+  public ParallelDeadlineGroup DeadlineWithRequirements(ParallelDeadlineGroup group) {
+    group.addRequirements(this);
+    return group;
   }
 
   private ParallelDeadlineGroup RunForTime(Command command, double time) {

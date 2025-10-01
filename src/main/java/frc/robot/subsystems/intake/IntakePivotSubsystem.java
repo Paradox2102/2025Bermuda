@@ -64,13 +64,15 @@ public class IntakePivotSubsystem extends SubsystemBase {
         PersistMode.kPersistParameters);
   }
 
-  public double getAngle() {
+  public double getAngle() { //degrees
     if(RobotBase.isReal()){
       return m_encoder.getPosition();
     } else {
       return m_pivotSimAngle;
     }
   }
+
+  //subsystem .run method can be used instead
 
   public Command setPosition(IntakeState pos) {
     return Commands.run(() -> {m_state = pos;}, this).until(atPosition);

@@ -89,7 +89,7 @@ public class ArmSubsystem extends SubsystemBase {
     }, this).until(atPosition);
   }
 
-  public Command scoreReef() {
+  public Command scoreCoral() {
     return Commands.runOnce(() -> {
       m_setPoint = m_state.getAngle() - ArmConstants.k_dunkAngle;
     }, this);
@@ -106,8 +106,7 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public double invertPos(double angle) {
-    double normAngle = -(angle - 90);
-    return (2 * normAngle - 360) + 90;
+    return -180 - angle;
   }
 
   public double getSetPoint() {
@@ -117,7 +116,7 @@ public class ArmSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_output = m_pid.calculate(getAngle(), m_invert ? invertPos(m_setPoint) : m_setPoint) + Constants.ArmConstants.k_f * Math.cos(Math.toRadians(getAngle()));
+    m_output = m_pid.calculate(getAngle(), getSetPoint()) + Constants.ArmConstants.k_f * Math.cos(Math.toRadians(getAngle()));
     m_armMotor.set(m_output);
     SmartDashboard.putNumber("Arm Angle", getAngle());
   }
