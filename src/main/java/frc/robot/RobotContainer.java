@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
@@ -38,16 +40,16 @@ public class RobotContainer {
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final CommandXboxController m_driverController = new CommandXboxController(0);
   // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
+  public final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
       "swerve"));
-  private IntakePivotSubsystem m_pivotSubsystem = new IntakePivotSubsystem();
-  private IntakeRollerSubsystem m_rollerSubsystem = new IntakeRollerSubsystem();
-  private ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
-  private ArmSubsystem m_armSubsystem = new ArmSubsystem();
-  private ClawSubsystem m_clawSubsystem = new ClawSubsystem();
-  private ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
-  private CageCatchSubsystem m_cageSubsystem = new CageCatchSubsystem();
-  private Superstructure m_superstructure = new Superstructure(m_pivotSubsystem, m_rollerSubsystem, m_elevatorSubsystem, m_armSubsystem, m_clawSubsystem, m_climberSubsystem, m_cageSubsystem);
+  public IntakePivotSubsystem m_pivotSubsystem = new IntakePivotSubsystem();
+  public IntakeRollerSubsystem m_rollerSubsystem = new IntakeRollerSubsystem();
+  public ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
+  public ArmSubsystem m_armSubsystem = new ArmSubsystem();
+  public ClawSubsystem m_clawSubsystem = new ClawSubsystem();
+  public ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
+  public CageCatchSubsystem m_cageSubsystem = new CageCatchSubsystem();
+  public Superstructure m_superstructure = new Superstructure(m_pivotSubsystem, m_rollerSubsystem, m_elevatorSubsystem, m_armSubsystem, m_clawSubsystem, m_climberSubsystem, m_cageSubsystem);
 
   ElevatorState m_algae_level = ElevatorState.ALGAE_HIGH;
 
@@ -156,24 +158,45 @@ public class RobotContainer {
     }
     m_superstructure.setDefaultCommand(m_superstructure.stow());
     //Bind different commands to buttons depending on whether or not the robot holds a coral
-    if(m_superstructure.getState() == RobotState.INTAKE) {
-        m_driverController.leftTrigger().toggleOnTrue(m_superstructure.groundAlgae());
-        m_driverController.leftBumper().toggleOnTrue(m_superstructure.goToLevel(m_algae_level).andThen(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true))));
-        m_driverController.a().onTrue(m_superstructure.goToLevel(ElevatorState.NET).andThen(m_superstructure.TriggerSequence(m_driverController.a()).andThen(m_superstructure.scoreAlgaeReset())));
-        m_driverController.y().onTrue(m_superstructure.goToLevel(ElevatorState.PROCESSOR).andThen(m_superstructure.TriggerSequence(m_driverController.y()).andThen(m_superstructure.scoreAlgaeReset())));
-        m_driverController.rightTrigger().toggleOnTrue(m_superstructure.groundCoral());
-        m_driverController.rightBumper().onTrue(m_superstructure.intakeL1(m_driverController.rightBumper()));
-        m_driverController.b().onTrue(m_superstructure.deployClimber().andThen(m_superstructure.TriggerSequence(m_driverController.b()).andThen(m_superstructure.climb())));
-        m_driverController.x().onTrue(m_superstructure.goToHandoff().andThen(m_superstructure.TriggerSequence(m_driverController.x()).andThen(m_superstructure.handoff())));
-    } else {
-        m_driverController.leftTrigger().onTrue(m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.leftTrigger(), true));
-        m_driverController.leftBumper().onTrue(m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.leftBumper(), true));
-        m_driverController.a().onTrue(m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.a(), true));
-        m_driverController.y().onTrue(m_superstructure.clawL1(m_driverController.y()));
-        m_driverController.rightTrigger().onTrue(m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.rightTrigger(), false));
-        m_driverController.rightBumper().onTrue(m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.rightBumper(), false));
-        m_driverController.b().onTrue(m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.b(), false));
-    }
+        m_driverController.leftTrigger().onTrue(new ConditionalCommand(
+            m_superstructure.groundAlgae(), 
+            m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.leftTrigger(), true),
+            () -> m_superstructure.getState() == RobotState.INTAKE));
+
+        m_driverController.leftBumper().onTrue(new ConditionalCommand(
+            m_superstructure.goToLevel(m_algae_level).andThen(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true))), 
+            m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.leftBumper(), true), 
+            () -> m_superstructure.getState() == RobotState.INTAKE));
+
+        m_driverController.a().onTrue(new ConditionalCommand(
+            m_superstructure.goToLevel(ElevatorState.NET).andThen(m_superstructure.TriggerSequence(m_driverController.a()).andThen(m_superstructure.scoreAlgaeReset())), 
+            m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.a(), true), 
+            () -> m_superstructure.getState() == RobotState.INTAKE));
+
+        m_driverController.y().onTrue(new ConditionalCommand(
+            m_superstructure.goToLevel(ElevatorState.PROCESSOR).andThen(m_superstructure.TriggerSequence(m_driverController.y()).andThen(m_superstructure.scoreAlgaeReset())), 
+            m_superstructure.clawL1(m_driverController.y()), 
+            () -> m_superstructure.getState() == RobotState.INTAKE));
+
+        m_driverController.rightTrigger().onTrue(new ConditionalCommand(
+            m_superstructure.groundCoral(), 
+            m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.rightTrigger(), false), 
+            () -> m_superstructure.getState() == RobotState.INTAKE));
+
+        m_driverController.rightBumper().onTrue(new ConditionalCommand(
+            m_superstructure.intakeL1(m_driverController.rightBumper()), 
+            m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.rightBumper(), false), 
+            () -> m_superstructure.getState() == RobotState.INTAKE));
+
+        m_driverController.b().onTrue(new ConditionalCommand(
+            m_superstructure.deployClimber().andThen(m_superstructure.TriggerSequence(m_driverController.b()).andThen(m_superstructure.climb())), 
+            m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.b(), false), 
+            () -> m_superstructure.getState() == RobotState.INTAKE));
+
+        m_driverController.x().onTrue(new ConditionalCommand(
+            m_superstructure.goToHandoff().andThen(m_superstructure.TriggerSequence(m_driverController.x()).andThen(m_superstructure.handoff())), 
+            new InstantCommand(), 
+            () -> m_superstructure.getState() == RobotState.INTAKE));
   }
 
   /**

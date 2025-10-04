@@ -4,12 +4,24 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
+  StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault()
+  .getStructTopic("Robot Pose", Pose2d.struct).publish();
+  StructArrayPublisher<Pose3d> zeroedComponentPoses = NetworkTableInstance.getDefault()
+  .getStructArrayTopic("Zeroed Poses", Pose3d.struct).publish();
+  StructArrayPublisher<Pose3d> finalComponentPoses = NetworkTableInstance.getDefault()
+  .getStructArrayTopic("Component Poses", Pose3d.struct).publish();
 
   private final RobotContainer m_robotContainer;
 
@@ -20,6 +32,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    posePublisher.set(
+      //m_robotContainer.m_swerveSubsystem.getPose()
+      new Pose2d());
+    zeroedComponentPoses.set(new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
+    finalComponentPoses.set(new Pose3d[] {
+      new Pose3d(0.226,0,0.158, new Rotation3d(0, Math.toRadians(m_robotContainer.m_pivotSubsystem.getAngle()),0)),
+      new Pose3d(-0.069,0, 0.343 + m_robotContainer.m_elevatorSubsystem.getPosition(), new Rotation3d(0,0,0)),
+      new Pose3d(-0.069,0, 0.343 + m_robotContainer.m_elevatorSubsystem.getPosition(), new Rotation3d(Math.toRadians(m_robotContainer.m_armSubsystem.getAngle()),0,0))});
   }
 
   @Override

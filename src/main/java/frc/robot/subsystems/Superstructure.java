@@ -127,7 +127,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public Command TriggerSequence(Trigger trigger) {
-    return Commands.run(null).until(trigger);
+    return Commands.run(() -> m_state = m_state).until(trigger);
   }
 
   public SequentialCommandGroup SequentialWithRequirements(SequentialCommandGroup group){

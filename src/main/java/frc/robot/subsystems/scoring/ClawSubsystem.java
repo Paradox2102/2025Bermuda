@@ -22,7 +22,7 @@ import frc.robot.Constants.CANIDConstants;
 import frc.robot.Constants.ClawConstants;
 
 public class ClawSubsystem extends SubsystemBase {
-  private SparkFlex m_clawMotor = new SparkFlex(CANIDConstants.intake_roller, MotorType.kBrushless);
+  private SparkFlex m_clawMotor = new SparkFlex(CANIDConstants.claw, MotorType.kBrushless);
   private RelativeEncoder m_encoder = m_clawMotor.getEncoder();
   private SparkClosedLoopController m_pid = m_clawMotor.getClosedLoopController();
   private boolean m_isAlgae = false;
