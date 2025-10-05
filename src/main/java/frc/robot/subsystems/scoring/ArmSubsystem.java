@@ -28,18 +28,18 @@ import frc.robot.Constants.ArmConstants;
 
 public class ArmSubsystem extends SubsystemBase {
   public enum ArmState {
-    STOW(0),
-    HANDOFF(0),
-    L1(0),
-    L2(0),
-    L3(0),
-    L4(0),
-    GROUND_ALGAE(0),
+    STOW(87.5),
+    HANDOFF(-90),
+    L1(-10),
+    L2(60),
+    L3(60),
+    L4(30),
+    GROUND_ALGAE(-20),
     ALGAE_LOW(0),
     ALGAE_HIGH(0),
     PROCESSOR(0),
-    NET(0),
-    LOLLIPOP(0);
+    NET(60),
+    LOLLIPOP(-10);
 
     private double m_angle;
     
@@ -55,23 +55,25 @@ public class ArmSubsystem extends SubsystemBase {
   private SparkFlex m_armMotor = new SparkFlex(Constants.CANIDConstants.arm, MotorType.kBrushless);
 
   private SparkSim m_armMotorSim = new SparkSim(m_armMotor, DCMotor.getNeoVortex(1));
-  private SingleJointedArmSim m_armSim = new SingleJointedArmSim(DCMotor.getNeoVortex(1), Constants.ArmConstants.k_gearRatio, Constants.ArmConstants.k_momentOfInertia, Constants.ArmConstants.k_armLengthMeters, Math.toRadians(-270), Math.toRadians(90), true, Math.toRadians(-90));
+
+  private ArmState m_state = ArmState.STOW;
+  private SingleJointedArmSim m_armSim = new SingleJointedArmSim(DCMotor.getNeoVortex(1), ArmConstants.k_gearRatio, ArmConstants.k_momentOfInertia, ArmConstants.k_armLengthMeters, Math.toRadians(-270), Math.toRadians(90), true, Math.toRadians(m_state.getAngle()));
 
   private AbsoluteEncoder m_encoder = m_armMotor.getAbsoluteEncoder();
   private double m_armSimAngle = 0;
 
-  private ArmState m_state = ArmState.STOW;
-  private PIDController m_pid = new PIDController(Constants.ArmConstants.k_p, Constants.ArmConstants.k_i, Constants.ArmConstants.k_d);
+  private PIDController m_pid = new PIDController(ArmConstants.k_p, ArmConstants.k_i, ArmConstants.k_d);
   private double m_output = 0;
 
   private boolean m_invert = false;
   private double m_setPoint = m_state.getAngle();
 
   public Trigger atPosition = new Trigger(
-    () -> Math.abs(getAngle() - m_setPoint) < Constants.ArmConstants.k_deadzone);
+    () -> Math.abs(getAngle() - m_setPoint) < ArmConstants.k_deadzone);
   /** Creates a new ArmSubsystem. */
   public ArmSubsystem() {
     m_armMotor.configure(ArmConstants.armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_pid.setIZone(ArmConstants.k_izone);
   }
 
   public double getAngle() {
@@ -83,7 +85,7 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public Command setPosition(ArmState pos) {
-    return Commands.runOnce(() -> {
+    return Commands.run(() -> {
       m_state = pos;
       m_setPoint = m_state.getAngle();
     }, this).until(atPosition);
@@ -116,9 +118,10 @@ public class ArmSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_output = m_pid.calculate(getAngle(), getSetPoint()) + Constants.ArmConstants.k_f * Math.cos(Math.toRadians(getAngle()));
-    m_armMotor.set(m_output);
+    m_output = m_pid.calculate(getAngle(), getSetPoint()) + ArmConstants.k_f * Math.cos(Math.toRadians(getSetPoint()));
+    m_armMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Arm Angle", getAngle());
+    SmartDashboard.putNumber("Arm Current", m_armMotorSim.getAppliedOutput());
   }
 
   public void simulationPeriodic() {

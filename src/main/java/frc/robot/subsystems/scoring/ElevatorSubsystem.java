@@ -11,14 +11,13 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -33,25 +32,27 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
-    STOW(0, ArmState.STOW),
-    HANDOFF(0, ArmState.HANDOFF),
-    L1(0, ArmState.L1),
-    L2(0, ArmState.L2),
-    L3(0, ArmState.L3),
-    L4(0, ArmState.L4),
-    GROUND_ALGAE(0, ArmState.GROUND_ALGAE),
-    ALGAE_LOW(0, ArmState.ALGAE_LOW),
-    ALGAE_HIGH(0, ArmState.ALGAE_HIGH),
-    PROCESSOR(0, ArmState.PROCESSOR),
-    NET(0, ArmState.NET),
-    LOLLIPOP(0, ArmState.LOLLIPOP);
+    STOW(0, ArmState.STOW, "Stow"),
+    HANDOFF(0.7, ArmState.HANDOFF, "Handoff"),
+    L1(0.4, ArmState.L1, "L1"),
+    L2(0.4, ArmState.L2, "L2"),
+    L3(0.6, ArmState.L3, "L3"),
+    L4(1.35, ArmState.L4, "L4"),
+    GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
+    ALGAE_LOW(0.3, ArmState.ALGAE_LOW, "Algae Low"),
+    ALGAE_HIGH(0.5, ArmState.ALGAE_HIGH, "Algae High"),
+    PROCESSOR(0, ArmState.PROCESSOR, "Processor"),
+    NET(1.42, ArmState.NET, "Net"),
+    LOLLIPOP(0, ArmState.LOLLIPOP, "Lollipop");
 
     private double m_height;
     private ArmState m_armPos;
+    private String m_name;
     
-    ElevatorState(double height, ArmState armPos) {
+    ElevatorState(double height, ArmState armPos, String name) {
       m_height = height;
       m_armPos = armPos;
+      m_name = name;
     }
 
     public double getHeight() {
@@ -61,25 +62,29 @@ public class ElevatorSubsystem extends SubsystemBase {
     public ArmState getArmPos() {
       return m_armPos;
     }
+
+    public String getName() {
+      return m_name;
+    }
   }
 
   private SparkFlex m_leadMotor = new SparkFlex(Constants.CANIDConstants.elev_leader, MotorType.kBrushless);
   private SparkFlex m_followMotor = new SparkFlex(Constants.CANIDConstants.elev_follower, MotorType.kBrushless);
   private SparkSim m_motorSim = new SparkSim(m_leadMotor, DCMotor.getNeoVortex(2));
 
-  //kv and ka calculated from reca.lc
-  private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, 0);
+  private ElevatorState m_state = ElevatorState.STOW;
 
-  private ProfiledPIDController m_pid = new ProfiledPIDController(ElevatorConstants.k_p, ElevatorConstants.k_i, ElevatorConstants.k_d, new Constraints(ElevatorConstants.k_maxVel, ElevatorConstants.k_maxAccel));
-  private SimpleMotorFeedforward m_feedforward = new SimpleMotorFeedforward(ElevatorConstants.k_g, ElevatorConstants.k_v, ElevatorConstants.k_a);
+  //kv and ka calculated from reca.lc
+  private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, m_state.getHeight());
+
+  private ProfiledPIDController m_pid = new ProfiledPIDController(ElevatorConstants.k_p, ElevatorConstants.k_i, ElevatorConstants.k_d, new Constraints(ElevatorConstants.k_maxVel, ElevatorConstants.k_maxAccel), 0.02);
+  private ElevatorFeedforward m_feedforward = new ElevatorFeedforward(ElevatorConstants.k_s, ElevatorConstants.k_g, ElevatorConstants.k_v, ElevatorConstants.k_a);
   private double m_output = 0;
 
   private double m_simHeight = 0;
 
   private RelativeEncoder m_encoder = m_leadMotor.getEncoder();
   private DigitalInput m_limitSwitch = new DigitalInput(0);
-
-  private ElevatorState m_state = ElevatorState.STOW;
   private double m_setPoint = m_state.getHeight();
   
   public Trigger atPosition = new Trigger(
@@ -93,6 +98,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   public ElevatorSubsystem() {
     m_leadMotor.configure(ElevatorConstants.elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_followMotor.configure(ElevatorConstants.followConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_pid.reset(0,0);
+    m_pid.setIZone(ElevatorConstants.k_izone);
   }
 
   public double getPosition() {
@@ -112,9 +119,11 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command setPosition(ElevatorState pos) {
-    return Commands.runOnce(() -> {
+    return Commands.run(() -> {
       m_state = pos;
+      m_pid.reset(getPosition(),getVelocity());
       m_setPoint = m_state.getHeight();
+      System.out.println("yippe");
     }, this).until(atPosition);
   }
 
@@ -135,16 +144,12 @@ public class ElevatorSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_pid.setGoal(m_setPoint);
-    if(RobotBase.isReal()) {
-      m_output = m_pid.calculate(getPosition()) + 
-        (m_feedforward.calculate(m_pid.getSetpoint().velocity) / RobotController.getBatteryVoltage());
-    } else {
-      m_output = m_pid.calculate(getPosition()) + 
-        (m_feedforward.calculate(m_pid.getSetpoint().velocity) / RoboRioSim.getVInVoltage());
-    }
-    m_leadMotor.set(m_output);
+    m_pid.setGoal(getSetPoint());
+    m_output = m_pid.calculate(getPosition()) + m_feedforward.calculate(m_pid.getSetpoint().velocity);
+    m_leadMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Elev Height", getPosition());
+    SmartDashboard.putNumber("Output", m_pid.getSetpoint().velocity);
+    SmartDashboard.putString("level", m_state.getName());
   }
 
   public void simulationPeriodic() {

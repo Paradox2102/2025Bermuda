@@ -45,16 +45,17 @@ public final class Constants
 
   public static final class IntakePivotConstants {
     public static final double k_resetPosition = 0;
-    public static final double k_deadzone = 0;
+    public static final double k_deadzone = 1;
 
     public static final double k_gearRatio = 11.67;
     public static final double k_momentOfInertia = 0.485;
     public static final double k_armLengthMeters = 0.5;
 
-    public static final double k_f = 0;
-    public static final double k_p = 0;
-    public static final double k_i = 0;
-    public static final double k_d = 0;
+    public static final double k_f = 4.072;
+    public static final double k_p = 0.0075;
+    public static final double k_i = 0.0005;
+    public static final double k_izone = 30;
+    public static final double k_d = 0.005;
 
     public static final SparkFlexConfig pivotConfig = new SparkFlexConfig();
     static {
@@ -67,12 +68,15 @@ public final class Constants
   }
 
   public static class ElevatorConstants {
-    public static final double k_deadzone = 0;
+    public static final double k_deadzone = 0.05;
     public static final double k_posConversionFactor = 0;
 
-    public static final double k_p = 0;
-    public static final double k_i = 0;
-    public static final double k_d = 0;
+    public static final double k_p = 1;
+    public static final double k_i = 0.1;
+    public static final double k_izone = 0.1;
+    public static final double k_d = 10;
+
+    public static final double k_s = 0;
     //found by reca.lc linear mechanism model
     public static final double k_g = 0.38;
     public static final double k_v = 4.69;
@@ -80,7 +84,7 @@ public final class Constants
     public static final double k_maxAccel = 42.15;
     public static final double k_maxVel = 2.45;
 
-    public static final double k_dunkHeight = 0;
+    public static final double k_dunkHeight = 0.1;
 
     public static final SparkFlexConfig elevatorConfig = new SparkFlexConfig();
     public static final SparkFlexConfig followConfig = new SparkFlexConfig();
@@ -93,19 +97,20 @@ public final class Constants
   }
 
   public static class ArmConstants {
-    public static final double k_deadzone = 0;
+    public static final double k_deadzone = 1;
     public static final double k_resetPosition = 0;
 
     public static final double k_gearRatio = 27;
     public static final double k_momentOfInertia = 0.308;
     public static final double k_armLengthMeters = 0.543;
 
-    public static final double k_p = 0;
-    public static final double k_i = 0;
-    public static final double k_d = 0;
-    public static final double k_f = 0;
+    public static final double k_p = 0.035;
+    public static final double k_i = 0.005;
+    public static final double k_izone = 30;
+    public static final double k_d = 0.001;
+    public static final double k_f = 1.033;
 
-    public static final double k_dunkAngle = 0;
+    public static final double k_dunkAngle = 10;
 
     public static final SparkFlexConfig armConfig = new SparkFlexConfig();
     static {

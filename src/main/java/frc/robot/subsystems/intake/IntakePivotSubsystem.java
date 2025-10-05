@@ -24,13 +24,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.Constants.IntakePivotConstants;
 
 public class IntakePivotSubsystem extends SubsystemBase {
   public enum IntakeState {
-    STOW(220),
-    HANDOFF(220),
-    INTAKE(0),
-    L1(120);
+    STOW(100),
+    HANDOFF(125),
+    INTAKE(5),
+    L1(60);
 
     private double m_angle;
     
@@ -46,22 +47,25 @@ public class IntakePivotSubsystem extends SubsystemBase {
   private SparkFlex m_pivotMotor = new SparkFlex(Constants.CANIDConstants.intake_pivot, MotorType.kBrushless);
 
   private SparkSim m_pivotMotorSim = new SparkSim(m_pivotMotor, DCMotor.getNeoVortex(1));
-  private SingleJointedArmSim m_pivotSim = new SingleJointedArmSim(DCMotor.getNeoVortex(1), Constants.IntakePivotConstants.k_gearRatio, Constants.IntakePivotConstants.k_momentOfInertia, Constants.IntakePivotConstants.k_armLengthMeters, 0, Math.toRadians(220), true, Math.toRadians(220));
+
+  private IntakeState m_state = IntakeState.L1;
+
+  private SingleJointedArmSim m_pivotSim = new SingleJointedArmSim(DCMotor.getNeoVortex(1), IntakePivotConstants.k_gearRatio, IntakePivotConstants.k_momentOfInertia, IntakePivotConstants.k_armLengthMeters, 0, Math.toRadians(140), true, Math.toRadians(m_state.getAngle()));
 
   private AbsoluteEncoder m_encoder = m_pivotMotor.getAbsoluteEncoder();
   private double m_pivotSimAngle = 0;
 
-  private IntakeState m_state = IntakeState.STOW;
-  private PIDController m_pid = new PIDController(Constants.IntakePivotConstants.k_p, Constants.IntakePivotConstants.k_i, Constants.IntakePivotConstants.k_d);
+  private PIDController m_pid = new PIDController(IntakePivotConstants.k_p, IntakePivotConstants.k_i, IntakePivotConstants.k_d);
   private double m_output = 0;
 
   public Trigger atPosition = new Trigger(
-    () -> Math.abs(getAngle() - m_state.getAngle()) < Constants.IntakePivotConstants.k_deadzone);
+    () -> Math.abs(getAngle() - m_state.getAngle()) < IntakePivotConstants.k_deadzone);
 
   /** Creates a new IntakePivot. */
   public IntakePivotSubsystem() {
-    m_pivotMotor.configure(Constants.IntakePivotConstants.pivotConfig, ResetMode.kResetSafeParameters,
+    m_pivotMotor.configure(IntakePivotConstants.pivotConfig, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
+    m_pid.setIZone(IntakePivotConstants.k_izone);
   }
 
   public double getAngle() { //degrees
@@ -89,9 +93,9 @@ public class IntakePivotSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_output = m_pid.calculate(getAngle(), m_state.getAngle()) + Constants.IntakePivotConstants.k_f * Math.cos(Math.toRadians(getAngle()));
-    m_pivotMotor.set(m_output);
-    SmartDashboard.putNumber("Climber Angle", getAngle());
+    m_output = m_pid.calculate(getAngle(), m_state.getAngle()) + IntakePivotConstants.k_f * Math.cos(Math.toRadians(getAngle()));
+    m_pivotMotor.setVoltage(m_output);
+    SmartDashboard.putNumber("Intake Angle", getAngle());
   }
 
   public void simulationPeriodic() {

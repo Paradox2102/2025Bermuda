@@ -29,6 +29,7 @@ import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.subsystems.scoring.ArmSubsystem;
 import frc.robot.subsystems.scoring.ClawSubsystem;
 import frc.robot.subsystems.scoring.ElevatorSubsystem;
+import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 import frc.robot.subsystems.scoring.ElevatorSubsystem.ElevatorState;
 
 import java.io.File;
@@ -126,11 +127,7 @@ public class RobotContainer {
    */
   private void configureBindings() {
     Command driveFieldOrientedAnglularVelocity = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity);
-    Command driveSetpointGen = m_swerveSubsystem.driveWithSetpointGeneratorFieldRelative(
-        driveDirectAngle);
     Command driveFieldOrientedAnglularVelocityKeyboard = m_swerveSubsystem.driveFieldOriented(driveAngularVelocityKeyboard);
-    Command driveSetpointGenKeyboard = m_swerveSubsystem.driveWithSetpointGeneratorFieldRelative(
-        driveDirectAngleKeyboard);
 
     if (RobotBase.isSimulation()) {
       m_swerveSubsystem.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
