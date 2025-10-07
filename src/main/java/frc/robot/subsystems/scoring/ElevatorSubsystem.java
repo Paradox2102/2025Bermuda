@@ -123,7 +123,6 @@ public class ElevatorSubsystem extends SubsystemBase {
       m_state = pos;
       m_pid.reset(getPosition(),getVelocity());
       m_setPoint = m_state.getHeight();
-      System.out.println("yippe");
     }, this).until(atPosition);
   }
 
@@ -145,10 +144,13 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_pid.setGoal(getSetPoint());
-    m_output = m_pid.calculate(getPosition()) + m_feedforward.calculate(m_pid.getSetpoint().velocity);
+    double pid = m_pid.calculate(getPosition());
+    m_output = pid + m_feedforward.calculate(m_pid.getSetpoint().velocity);
     m_leadMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Elev Height", getPosition());
-    SmartDashboard.putNumber("Output", m_pid.getSetpoint().velocity);
+    SmartDashboard.putNumber("Output", m_output);
+    SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));
+    SmartDashboard.putNumber("Pid", pid);
     SmartDashboard.putString("level", m_state.getName());
   }
 

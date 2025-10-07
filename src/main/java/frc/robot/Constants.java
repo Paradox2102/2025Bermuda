@@ -78,11 +78,11 @@ public final class Constants
 
     public static final double k_s = 0;
     //found by reca.lc linear mechanism model
-    public static final double k_g = 0.38;
+    public static final double k_g = 0.35;
     public static final double k_v = 4.69;
-    public static final double k_a = 0.06;
-    public static final double k_maxAccel = 42.15;
-    public static final double k_maxVel = 2.45;
+    public static final double k_a = 0.05;
+    public static final double k_maxAccel = 42.23;
+    public static final double k_maxVel = 2.46;
 
     public static final double k_dunkHeight = 0.1;
 
