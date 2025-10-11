@@ -28,8 +28,8 @@ public class ClawSubsystem extends SubsystemBase {
   private boolean m_isAlgae = false;
 
   public final Trigger pickCoralAlgae = new Trigger(
-      () -> getCurrentDraw() < ClawConstants.k_stallCurrent && getSpeed() >= ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed)
-      .debounce(.25, DebounceType.kBoth);
+      () -> getCurrentDraw() > 0 && getSpeed() >= ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed)
+      .debounce(.125, DebounceType.kBoth);
   private boolean m_hasGamePiece = false;
 
   /** Creates a new RollerSubsystem. */
@@ -52,6 +52,11 @@ public class ClawSubsystem extends SubsystemBase {
 
   public void run(boolean in) {
     m_pid.setReference(in ? ClawConstants.k_inSpeed : ClawConstants.k_outSpeed, ControlType.kVelocity);
+    //m_clawMotor.setVoltage(1);
+  }
+
+  public Command stop(){
+    return Commands.run(() -> m_pid.setReference(0, ControlType.kCurrent), this);
   }
 
   public Command intake() {
@@ -87,5 +92,6 @@ public class ClawSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("Claw Speed", getSpeed());
+    SmartDashboard.putNumber("Claw Current", getCurrentDraw());
   }
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -29,7 +30,6 @@ import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.subsystems.scoring.ArmSubsystem;
 import frc.robot.subsystems.scoring.ClawSubsystem;
 import frc.robot.subsystems.scoring.ElevatorSubsystem;
-import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 import frc.robot.subsystems.scoring.ElevatorSubsystem.ElevatorState;
 
 import java.io.File;
@@ -153,47 +153,49 @@ public class RobotContainer {
                   Units.degreesToRadians(180))));
 
     }
-    m_superstructure.setDefaultCommand(m_superstructure.stow());
+    //m_superstructure.setDefaultCommand(m_superstructure.stow());
     //Bind different commands to buttons depending on whether or not the robot holds a coral
-        m_driverController.leftTrigger().onTrue(new ConditionalCommand(
-            m_superstructure.groundAlgae(), 
-            m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.leftTrigger(), true),
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.leftTrigger().onTrue(new ConditionalCommand(
+        //     m_superstructure.groundAlgae(), 
+        //     m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.leftTrigger(), true),
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
 
-        m_driverController.leftBumper().onTrue(new ConditionalCommand(
-            m_superstructure.goToLevel(m_algae_level).andThen(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true))), 
-            m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.leftBumper(), true), 
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.leftBumper().onTrue(new ConditionalCommand(
+        //     m_superstructure.goToLevel(m_algae_level).andThen(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true))), 
+        //     m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.leftBumper(), true), 
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
 
-        m_driverController.a().onTrue(new ConditionalCommand(
-            m_superstructure.goToLevel(ElevatorState.NET).andThen(m_superstructure.TriggerSequence(m_driverController.a()).andThen(m_superstructure.scoreAlgaeReset())), 
-            m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.a(), true), 
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.a().onTrue(new ConditionalCommand(
+        //     m_superstructure.goToLevel(ElevatorState.NET).andThen(m_superstructure.TriggerSequence(m_driverController.a()).andThen(m_superstructure.scoreAlgaeReset())), 
+        //     m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.a(), true), 
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
 
-        m_driverController.y().onTrue(new ConditionalCommand(
-            m_superstructure.goToLevel(ElevatorState.PROCESSOR).andThen(m_superstructure.TriggerSequence(m_driverController.y()).andThen(m_superstructure.scoreAlgaeReset())), 
-            m_superstructure.clawL1(m_driverController.y()), 
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.y().onTrue(new ConditionalCommand(
+        //     m_superstructure.goToLevel(ElevatorState.PROCESSOR).andThen(m_superstructure.TriggerSequence(m_driverController.y()).andThen(m_superstructure.scoreAlgaeReset())), 
+        //     m_superstructure.clawL1(m_driverController.y()), 
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
 
-        m_driverController.rightTrigger().onTrue(new ConditionalCommand(
-            m_superstructure.groundCoral(), 
-            m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.rightTrigger(), false), 
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.rightTrigger().onTrue(new ConditionalCommand(
+        //     m_superstructure.groundCoral(), 
+        //     m_superstructure.scoreLevel(ElevatorState.L4, m_driverController.rightTrigger(), false), 
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
 
-        m_driverController.rightBumper().onTrue(new ConditionalCommand(
-            m_superstructure.intakeL1(m_driverController.rightBumper()), 
-            m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.rightBumper(), false), 
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.rightBumper().onTrue(new ConditionalCommand(
+        //     m_superstructure.intakeL1(m_driverController.rightBumper()), 
+        //     m_superstructure.scoreLevel(ElevatorState.L3, m_driverController.rightBumper(), false), 
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
 
-        m_driverController.b().onTrue(new ConditionalCommand(
-            m_superstructure.deployClimber().andThen(m_superstructure.TriggerSequence(m_driverController.b()).andThen(m_superstructure.climb())), 
-            m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.b(), false), 
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.b().onTrue(new ConditionalCommand(
+        //     m_superstructure.deployClimber().andThen(m_superstructure.TriggerSequence(m_driverController.b()).andThen(m_superstructure.climb())), 
+        //     m_superstructure.scoreLevel(ElevatorState.L2, m_driverController.b(), false), 
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
 
-        m_driverController.x().onTrue(new ConditionalCommand(
-            m_superstructure.goToHandoff().andThen(m_superstructure.TriggerSequence(m_driverController.x()).andThen(m_superstructure.handoff())), 
-            new InstantCommand(), 
-            () -> m_superstructure.getState() == RobotState.INTAKE));
+        // m_driverController.x().onTrue(new ConditionalCommand(
+        //     m_superstructure.goToHandoff().andThen(m_superstructure.TriggerSequence(m_driverController.x()).andThen(m_superstructure.handoff())), 
+        //     new InstantCommand(), 
+        //     () -> m_superstructure.getState() == RobotState.INTAKE));
+        m_driverController.a().onTrue(m_rollerSubsystem.intake());
+        m_driverController.b().whileTrue(m_rollerSubsystem.eject());
   }
 
   /**

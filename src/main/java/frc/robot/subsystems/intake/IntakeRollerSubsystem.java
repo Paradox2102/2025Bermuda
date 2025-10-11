@@ -27,8 +27,8 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_pid = m_rollerMotor.getClosedLoopController();
 
   public final Trigger pickCoral = new Trigger(
-      () -> getCurrentDraw() > IntakeRollerConstants.k_stallCurrent || getSpeed() <= IntakeRollerConstants.k_inSpeed - IntakeRollerConstants.k_slowSpeed)
-      .debounce(.25, DebounceType.kBoth);
+      () -> getCurrentDraw() > 0 && getSpeed() <= IntakeRollerConstants.k_inSpeed - IntakeRollerConstants.k_slowSpeed)
+      .debounce(.5, DebounceType.kBoth);
   private boolean m_hasCoral = false;
 
   /** Creates a new RollerSubsystem. */
@@ -52,9 +52,16 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     m_pid.setReference(in ? (m_hasCoral ? IntakeRollerConstants.k_stallSpeed : IntakeRollerConstants.k_inSpeed) : IntakeRollerConstants.k_outSpeed, ControlType.kVelocity);
   }
 
+  public Command stop() {
+    return Commands.run(() ->
+    m_rollerMotor.setVoltage(0));
+  }
+
   public Command intake() {
-    return Commands.run(() -> {
+    return Commands.runEnd(() -> {
       run(true);
+    }, () -> {
+      stop();
     }, this).until(pickCoral);
   }
 
@@ -63,6 +70,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
       run(false);
     }, () -> {
       m_hasCoral = false;
+      stop();
     }, this);
   }
 
@@ -81,6 +89,8 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("Roller Speed", getSpeed());
+    SmartDashboard.putNumber("Roller Current", getCurrentDraw());
+    SmartDashboard.putBoolean("Roller trigger", pickCoral.getAsBoolean());
     if(pickCoral.getAsBoolean()){
       m_hasCoral = true;
     }

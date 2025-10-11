@@ -59,7 +59,7 @@ public class ArmSubsystem extends SubsystemBase {
   private ArmState m_state = ArmState.STOW;
   private SingleJointedArmSim m_armSim = new SingleJointedArmSim(DCMotor.getNeoVortex(1), ArmConstants.k_gearRatio, ArmConstants.k_momentOfInertia, ArmConstants.k_armLengthMeters, Math.toRadians(-270), Math.toRadians(90), true, Math.toRadians(m_state.getAngle()));
 
-  private AbsoluteEncoder m_encoder = m_armMotor.getAbsoluteEncoder();
+  private AbsoluteEncoder m_encoder;
   private double m_armSimAngle = 0;
 
   private PIDController m_pid = new PIDController(ArmConstants.k_p, ArmConstants.k_i, ArmConstants.k_d);
@@ -74,11 +74,12 @@ public class ArmSubsystem extends SubsystemBase {
   public ArmSubsystem() {
     m_armMotor.configure(ArmConstants.armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_pid.setIZone(ArmConstants.k_izone);
+    m_encoder = m_armMotor.getAbsoluteEncoder();
   }
 
   public double getAngle() {
     if(RobotBase.isReal()){
-      return m_encoder.getPosition();
+      return m_encoder.getPosition() - 270;
     } else {
       return m_armSimAngle;
     }
@@ -119,9 +120,9 @@ public class ArmSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_output = m_pid.calculate(getAngle(), getSetPoint()) + ArmConstants.k_f * Math.cos(Math.toRadians(getSetPoint()));
-    m_armMotor.setVoltage(m_output);
+    //m_armMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Arm Angle", getAngle());
-    SmartDashboard.putNumber("Arm Current", m_armMotorSim.getAppliedOutput());
+    //SmartDashboard.putNumber("Arm Current", m_armMotorSim.getAppliedOutput());
   }
 
   public void simulationPeriodic() {

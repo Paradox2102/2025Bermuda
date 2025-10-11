@@ -33,9 +33,9 @@ public class CageCatchSubsystem extends SubsystemBase {
     return m_encoder.getVelocity();
   }
 
-  public Command run(boolean in) {
+  public Command run() {
     return Commands.runOnce(
-      () -> {m_pid.setReference(in ? CageCatcherConstants.k_inSpeed : CageCatcherConstants.k_outSpeed, ControlType.kVelocity);}, this);
+      () -> {m_pid.setReference(CageCatcherConstants.k_inSpeed, ControlType.kVelocity);}, this);
   }
 
   public Command stop() {

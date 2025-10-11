@@ -5,6 +5,7 @@
 package frc.robot.subsystems.intake;
 
 import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
@@ -53,6 +54,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
   private SingleJointedArmSim m_pivotSim = new SingleJointedArmSim(DCMotor.getNeoVortex(1), IntakePivotConstants.k_gearRatio, IntakePivotConstants.k_momentOfInertia, IntakePivotConstants.k_armLengthMeters, 0, Math.toRadians(140), true, Math.toRadians(m_state.getAngle()));
 
   private AbsoluteEncoder m_encoder = m_pivotMotor.getAbsoluteEncoder();
+  //private RelativeEncoder m_encoder = m_pivotMotor.getEncoder();
   private double m_pivotSimAngle = 0;
 
   private PIDController m_pid = new PIDController(IntakePivotConstants.k_p, IntakePivotConstants.k_i, IntakePivotConstants.k_d);
@@ -70,7 +72,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
 
   public double getAngle() { //degrees
     if(RobotBase.isReal()){
-      return m_encoder.getPosition();
+      return -m_encoder.getPosition();
     } else {
       return m_pivotSimAngle;
     }
@@ -94,7 +96,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_output = m_pid.calculate(getAngle(), m_state.getAngle()) + IntakePivotConstants.k_f * Math.cos(Math.toRadians(getAngle()));
-    m_pivotMotor.setVoltage(m_output);
+    //m_pivotMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Intake Angle", getAngle());
   }
 

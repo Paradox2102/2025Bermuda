@@ -64,21 +64,22 @@ public final class Constants
         pivotConfig.absoluteEncoder
               .positionConversionFactor(360)
               .zeroOffset(k_resetPosition);
+        pivotConfig.encoder.positionConversionFactor(140/4.54);
     }
   }
 
   public static class ElevatorConstants {
     public static final double k_deadzone = 0.05;
-    public static final double k_posConversionFactor = 0;
+    public static final double k_rotationsToMeters = 0.00371388888;
 
-    public static final double k_p = 1;
-    public static final double k_i = 0.1;
-    public static final double k_izone = 0.1;
-    public static final double k_d = 10;
+    public static final double k_p = 0.1;
+    public static final double k_i = 0;
+    // public static final double k_izone = 0.1;
+    public static final double k_d = 0.05;
 
     public static final double k_s = 0;
     //found by reca.lc linear mechanism model
-    public static final double k_g = 0.35;
+    public static final double k_g = 0.48;
     public static final double k_v = 4.69;
     public static final double k_a = 0.05;
     public static final double k_maxAccel = 42.23;
@@ -91,14 +92,14 @@ public final class Constants
     static {
       elevatorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
       elevatorConfig.inverted(false);
-      elevatorConfig.encoder.positionConversionFactor(k_posConversionFactor).velocityConversionFactor(k_posConversionFactor);
+      elevatorConfig.encoder.positionConversionFactor(k_rotationsToMeters).velocityConversionFactor(k_rotationsToMeters);
       followConfig.apply(elevatorConfig).follow(CANIDConstants.elev_leader, true);
     }
   }
 
   public static class ArmConstants {
     public static final double k_deadzone = 1;
-    public static final double k_resetPosition = 0;
+    public static final double k_resetPosition = 171.0/360;
 
     public static final double k_gearRatio = 27;
     public static final double k_momentOfInertia = 0.308;
@@ -117,8 +118,9 @@ public final class Constants
         armConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
         armConfig.inverted(false);
         armConfig.absoluteEncoder
+              .zeroOffset(k_resetPosition)
               .positionConversionFactor(360)
-              .zeroOffset(k_resetPosition);
+              .inverted(true);
     }
   }
 
@@ -138,6 +140,7 @@ public final class Constants
       climberConfig.absoluteEncoder
             .positionConversionFactor(360)
             .zeroOffset(k_resetPosition);
+      climberConfig.encoder.positionConversionFactor(90/24.75);
       climberConfig.closedLoop
             .pid(k_p, k_i, k_d)
             .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
@@ -146,42 +149,37 @@ public final class Constants
   }
 
   public static class CageCatcherConstants {
-    public static final double k_f = 0;
-    public static final double k_p = 0;
-    public static final double k_i = 0;
-    public static final double k_d = 0;
+    public static final double k_f = 0.000275;
 
-    public static final double k_inSpeed = 0;
-    public static final double k_outSpeed = 0;
+    public static final double k_inSpeed = 500;
 
     public static final SparkFlexConfig cageConfig = new SparkFlexConfig();
     static {
       cageConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
       cageConfig.inverted(false);
       cageConfig.closedLoop
-            .pid(k_p, k_i, k_d)
             .velocityFF(k_f)
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     }
   }
 
   public static class IntakeRollerConstants {
-    public static final double k_f = 0;
-    public static final double k_p = 0;
+    public static final double k_f = 0.00027;
+    public static final double k_p = 0.00005;
     public static final double k_i = 0;
     public static final double k_d = 0;
 
     public static final double k_stallCurrent = 0;
-    public static final double k_slowSpeed = 0;
+    public static final double k_slowSpeed = 1500;
 
-    public static final double k_inSpeed = 0;
+    public static final double k_inSpeed = 2000;
     public static final double k_outSpeed = 0;
     public static final double k_stallSpeed = 0;
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
     static {
       rollerConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
-      rollerConfig.inverted(false);
+      rollerConfig.inverted(true);
       rollerConfig.closedLoop
             .pid(k_p, k_i, k_d)
             .velocityFF(k_f)
@@ -190,21 +188,21 @@ public final class Constants
   }
 
   public static class ClawConstants {
-    public static final double k_f = 0;
-    public static final double k_p = 0;
-    public static final double k_i = 0;
+    public static final double k_f = 0.0001;
+    public static final double k_p = 0.00001;
+    public static final double k_i = 0.000001;
     public static final double k_d = 0;
 
     public static final double k_stallCurrent = 0;
-    public static final double k_slowSpeed = 0;
+    public static final double k_slowSpeed = 200;
 
-    public static final double k_inSpeed = 0;
-    public static final double k_outSpeed = 0;
+    public static final double k_inSpeed = 500;
+    public static final double k_outSpeed = -200;
 
     public static final SparkFlexConfig clawConfig = new SparkFlexConfig();
     static {
       clawConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
-      clawConfig.inverted(false);
+      clawConfig.inverted(true);
       clawConfig.closedLoop
             .pid(k_p, k_i, k_d)
             .velocityFF(k_f)
@@ -225,21 +223,21 @@ public final class Constants
   public static class CANIDConstants {
     public static final int gyro = 0;
     public static final int fl_drive = 1;
-    public static final int fl_turn = 2;
-    public static final int fr_drive = 3;
-    public static final int fr_turn = 4;
-    public static final int bl_drive = 5;
-    public static final int bl_turn = 6;
-    public static final int br_drive = 7;
-    public static final int br_turn = 8;
-    public static final int elev_leader = 10;
+    public static final int fl_turn = 2; //
+    public static final int fr_drive = 3; //
+    public static final int fr_turn = 4; //
+    public static final int bl_drive = 5; //
+    public static final int bl_turn = 6; //
+    public static final int br_drive = 7; //
+    public static final int br_turn = 8; //
+    public static final int elev_leader = 10; //
     public static final int elev_follower = 11;
     public static final int arm = 12;
-    public static final int claw = 13;
-    public static final int intake_pivot = 20;
-    public static final int intake_roller = 21;
-    public static final int climber = 30;
-    public static final int climber_follow = 31;
-    public static final int cage_grabber = 32;
+    public static final int claw = 13; //
+    public static final int intake_pivot = 20; //
+    public static final int intake_roller = 21; //
+    public static final int climber = 30; //
+    public static final int climber_follow = 31; //
+    public static final int cage_grabber = 32; //
   }
 }

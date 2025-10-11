@@ -99,7 +99,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_leadMotor.configure(ElevatorConstants.elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_followMotor.configure(ElevatorConstants.followConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_pid.reset(0,0);
-    m_pid.setIZone(ElevatorConstants.k_izone);
+    //m_pid.setIZone(ElevatorConstants.k_izone);
   }
 
   public double getPosition() {
@@ -146,12 +146,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_pid.setGoal(getSetPoint());
     double pid = m_pid.calculate(getPosition());
     m_output = pid + m_feedforward.calculate(m_pid.getSetpoint().velocity);
-    m_leadMotor.setVoltage(m_output);
+    //m_leadMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Elev Height", getPosition());
     SmartDashboard.putNumber("Output", m_output);
     SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));
     SmartDashboard.putNumber("Pid", pid);
     SmartDashboard.putString("level", m_state.getName());
+    SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
+    SmartDashboard.putNumber("velocity", getVelocity());
   }
 
   public void simulationPeriodic() {

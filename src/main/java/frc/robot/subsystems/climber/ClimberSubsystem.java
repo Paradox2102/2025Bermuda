@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.climber;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
@@ -40,7 +42,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private SparkFlex m_climberMotor = new SparkFlex(CANIDConstants.climber, MotorType.kBrushless);
   private SparkFlex m_climberFollow = new SparkFlex(CANIDConstants.climber_follow, MotorType.kBrushless);
 
-  private SparkAbsoluteEncoder m_encoder = m_climberMotor.getAbsoluteEncoder();
+  private RelativeEncoder m_encoder = m_climberMotor.getEncoder();
   private SparkClosedLoopController m_pid = m_climberMotor.getClosedLoopController();
 
   private ClimberState m_state = ClimberState.STOW;
@@ -68,6 +70,13 @@ public class ClimberSubsystem extends SubsystemBase {
     return Commands.runOnce( () -> {
     m_state = ClimberState.STOW;
     m_pid.setReference(m_state.getAngle(), ControlType.kPosition);}, this);
+  }
+
+  public Command runOut(boolean in) {
+    return Commands.runEnd(() ->
+    m_pid.setReference(in ? 0.1 : -0.1, ControlType.kDutyCycle), 
+    () -> m_pid.setReference(0, ControlType.kDutyCycle)
+     ,this);
   }
 
   @Override

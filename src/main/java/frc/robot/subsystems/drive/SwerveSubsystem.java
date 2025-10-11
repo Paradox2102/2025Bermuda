@@ -114,7 +114,7 @@ public class SwerveSubsystem extends SubsystemBase {
             // updates better.
             m_swerveDrive.stopOdometryThread();
         }
-        setupPathPlanner();
+        //setupPathPlanner();
         RobotModeTriggers.autonomous().onTrue(Commands.runOnce(this::zeroGyroWithAlliance));
     }
 
