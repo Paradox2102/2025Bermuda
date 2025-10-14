@@ -24,17 +24,18 @@ import frc.robot.Constants.ClawConstants;
 public class ClawSubsystem extends SubsystemBase {
   private SparkFlex m_clawMotor = new SparkFlex(CANIDConstants.claw, MotorType.kBrushless);
   private RelativeEncoder m_encoder = m_clawMotor.getEncoder();
-  private SparkClosedLoopController m_pid = m_clawMotor.getClosedLoopController();
+  private SparkClosedLoopController m_pid;
   private boolean m_isAlgae = false;
 
   public final Trigger pickCoralAlgae = new Trigger(
-      () -> getCurrentDraw() > 0 && getSpeed() >= ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed)
-      .debounce(.125, DebounceType.kBoth);
+      () -> Math.abs(getCurrentDraw()) > ClawConstants.k_stallCurrent && getSpeed() < (ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed))
+      .debounce(0.5, DebounceType.kRising);
   private boolean m_hasGamePiece = false;
 
   /** Creates a new RollerSubsystem. */
   public ClawSubsystem() {
     m_clawMotor.configure(ClawConstants.clawConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_pid = m_clawMotor.getClosedLoopController();
   }
 
   public double getSpeed() {
@@ -42,7 +43,7 @@ public class ClawSubsystem extends SubsystemBase {
   }
 
   public double getCurrentDraw() {
-    return m_clawMotor.getAppliedOutput();
+    return m_clawMotor.getOutputCurrent();
   }
 
   public boolean hasGamePiece() {
@@ -52,11 +53,10 @@ public class ClawSubsystem extends SubsystemBase {
 
   public void run(boolean in) {
     m_pid.setReference(in ? ClawConstants.k_inSpeed : ClawConstants.k_outSpeed, ControlType.kVelocity);
-    //m_clawMotor.setVoltage(1);
   }
 
   public Command stop(){
-    return Commands.run(() -> m_pid.setReference(0, ControlType.kCurrent), this);
+    return Commands.runOnce(() -> m_pid.setReference(0, ControlType.kVoltage), this);
   }
 
   public Command intake() {
@@ -81,7 +81,7 @@ public class ClawSubsystem extends SubsystemBase {
     return Commands.runOnce(
       () -> {
       if(m_isAlgae) {
-        run(true); 
+        m_pid.setReference(40, ControlType.kCurrent); 
       } else {
         m_pid.setReference(0, ControlType.kVoltage);
       }

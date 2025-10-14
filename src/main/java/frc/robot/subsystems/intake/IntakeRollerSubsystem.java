@@ -27,8 +27,8 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_pid = m_rollerMotor.getClosedLoopController();
 
   public final Trigger pickCoral = new Trigger(
-      () -> getCurrentDraw() > 0 && getSpeed() <= IntakeRollerConstants.k_inSpeed - IntakeRollerConstants.k_slowSpeed)
-      .debounce(.5, DebounceType.kBoth);
+      () -> getCurrentDraw() > IntakeRollerConstants.k_stallCurrent && getSpeed() < IntakeRollerConstants.k_inSpeed - IntakeRollerConstants.k_slowSpeed)
+      .debounce(.5, DebounceType.kRising);
   private boolean m_hasCoral = false;
 
   /** Creates a new RollerSubsystem. */
@@ -41,7 +41,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   }
 
   public double getCurrentDraw() {
-    return m_rollerMotor.getAppliedOutput();
+    return m_rollerMotor.getOutputCurrent();
   }
 
   public boolean hasGamePiece() {
@@ -53,8 +53,8 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   }
 
   public Command stop() {
-    return Commands.run(() ->
-    m_rollerMotor.setVoltage(0));
+    return Commands.runOnce(() -> 
+    m_pid.setReference(0, ControlType.kCurrent), this);
   }
 
   public Command intake() {
@@ -66,7 +66,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   }
 
   public Command eject() {
-    return Commands.startEnd(() -> {
+    return Commands.runEnd(() -> {
       run(false);
     }, () -> {
       m_hasCoral = false;

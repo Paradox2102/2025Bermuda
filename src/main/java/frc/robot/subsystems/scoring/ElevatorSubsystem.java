@@ -35,8 +35,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     STOW(0, ArmState.STOW, "Stow"),
     HANDOFF(0.7, ArmState.HANDOFF, "Handoff"),
     L1(0.4, ArmState.L1, "L1"),
-    L2(0.4, ArmState.L2, "L2"),
-    L3(0.6, ArmState.L3, "L3"),
+    L2(0.35, ArmState.L2, "L2"),
+    L3(0.65, ArmState.L3, "L3"),
     L4(1.35, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
     ALGAE_LOW(0.3, ArmState.ALGAE_LOW, "Algae Low"),
@@ -126,9 +126,17 @@ public class ElevatorSubsystem extends SubsystemBase {
     }, this).until(atPosition);
   }
 
+  public Command runUp(){
+    return Commands.runEnd(() -> {
+      m_leadMotor.setVoltage(6);
+    }, ()-> {
+      m_leadMotor.setVoltage(0);
+    }, this);
+  }
+
   public Command scoreCoral() {
     return Commands.runOnce(() -> {
-      m_setPoint = m_state.getHeight() - ElevatorConstants.k_dunkHeight;
+      m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
     }, this);
   }
 
@@ -146,7 +154,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_pid.setGoal(getSetPoint());
     double pid = m_pid.calculate(getPosition());
     m_output = pid + m_feedforward.calculate(m_pid.getSetpoint().velocity);
-    //m_leadMotor.setVoltage(m_output);
+    m_leadMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Elev Height", getPosition());
     SmartDashboard.putNumber("Output", m_output);
     SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));

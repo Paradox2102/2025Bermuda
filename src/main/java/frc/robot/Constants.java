@@ -44,46 +44,46 @@ public final class Constants
   }
 
   public static final class IntakePivotConstants {
-    public static final double k_resetPosition = 0;
-    public static final double k_deadzone = 1;
+    public static final double k_resetPosition = 20.1/360;
+    public static final double k_deadzone = 2;
 
     public static final double k_gearRatio = 11.67;
     public static final double k_momentOfInertia = 0.485;
     public static final double k_armLengthMeters = 0.5;
 
-    public static final double k_f = 4.072;
-    public static final double k_p = 0.0075;
-    public static final double k_i = 0.0005;
-    public static final double k_izone = 30;
-    public static final double k_d = 0.005;
+    public static final double k_f = 0.5;
+    public static final double k_p = 0.0225;
+    public static final double k_i = 0.025;
+    public static final double k_izone = 15;
 
     public static final SparkFlexConfig pivotConfig = new SparkFlexConfig();
     static {
         pivotConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
-        pivotConfig.inverted(false);
+        pivotConfig.inverted(true);
         pivotConfig.absoluteEncoder
               .positionConversionFactor(360)
-              .zeroOffset(k_resetPosition);
+              .zeroOffset(k_resetPosition)
+              .inverted(false);
         pivotConfig.encoder.positionConversionFactor(140/4.54);
     }
   }
 
   public static class ElevatorConstants {
-    public static final double k_deadzone = 0.05;
-    public static final double k_rotationsToMeters = 0.00371388888;
+    public static final double k_deadzone = 0.25;
+    public static final double k_rotationsToMeters = 0.023350521;
 
-    public static final double k_p = 0.1;
+    public static final double k_p = 0.025;
     public static final double k_i = 0;
     // public static final double k_izone = 0.1;
-    public static final double k_d = 0.05;
+    public static final double k_d = 0.5;
 
     public static final double k_s = 0;
     //found by reca.lc linear mechanism model
-    public static final double k_g = 0.48;
+    public static final double k_g = 0.25;
     public static final double k_v = 4.69;
     public static final double k_a = 0.05;
-    public static final double k_maxAccel = 42.23;
-    public static final double k_maxVel = 2.46;
+    public static final double k_maxAccel = 25;
+    public static final double k_maxVel = 2;
 
     public static final double k_dunkHeight = 0.1;
 
@@ -98,7 +98,7 @@ public final class Constants
   }
 
   public static class ArmConstants {
-    public static final double k_deadzone = 1;
+    public static final double k_deadzone = 5;
     public static final double k_resetPosition = 171.0/360;
 
     public static final double k_gearRatio = 27;
@@ -106,12 +106,12 @@ public final class Constants
     public static final double k_armLengthMeters = 0.543;
 
     public static final double k_p = 0.035;
-    public static final double k_i = 0.005;
-    public static final double k_izone = 30;
-    public static final double k_d = 0.001;
-    public static final double k_f = 1.033;
+    public static final double k_i = 0;//0.005;
+    public static final double k_izone = 0;
+    public static final double k_d = 0;//0.001;
+    public static final double k_f = 0.75;
 
-    public static final double k_dunkAngle = 10;
+    public static final double k_dunkAngle = 40;
 
     public static final SparkFlexConfig armConfig = new SparkFlexConfig();
     static {
@@ -125,40 +125,35 @@ public final class Constants
   }
 
   public static class ClimberConstants {
-    public static final double k_deadzone = 0;
-    public static final double k_resetPosition = 0;
+    public static final double k_deadzone = 0.1;
 
-    public static final double k_p = 0;
-    public static final double k_i = 0;
-    public static final double k_d = 0;
+    public static final double k_p = 0.005;
 
     public static final SparkFlexConfig climberConfig = new SparkFlexConfig();
     public static final SparkFlexConfig followConfig = new SparkFlexConfig();
     static {
       climberConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
       climberConfig.inverted(false);
-      climberConfig.absoluteEncoder
-            .positionConversionFactor(360)
-            .zeroOffset(k_resetPosition);
-      climberConfig.encoder.positionConversionFactor(90/24.75);
+      climberConfig.encoder.positionConversionFactor(90/25);
       climberConfig.closedLoop
-            .pid(k_p, k_i, k_d)
-            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+            .p(k_p)
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
       followConfig.apply(climberConfig).follow(CANIDConstants.climber, true);
     }
   }
 
   public static class CageCatcherConstants {
-    public static final double k_f = 0.000275;
+    public static final double k_p = 0.0001;
+    public static final double k_i = 0.0000005;
 
-    public static final double k_inSpeed = 500;
+    public static final double k_inSpeed = 1000;
 
     public static final SparkFlexConfig cageConfig = new SparkFlexConfig();
     static {
       cageConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
       cageConfig.inverted(false);
       cageConfig.closedLoop
-            .velocityFF(k_f)
+            .pid(k_p, k_i, 0)
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     }
   }
@@ -169,11 +164,11 @@ public final class Constants
     public static final double k_i = 0;
     public static final double k_d = 0;
 
-    public static final double k_stallCurrent = 0;
+    public static final double k_stallCurrent = 75;
     public static final double k_slowSpeed = 1500;
 
-    public static final double k_inSpeed = 2000;
-    public static final double k_outSpeed = 0;
+    public static final double k_inSpeed = 3000;
+    public static final double k_outSpeed = -4000;
     public static final double k_stallSpeed = 0;
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
@@ -188,20 +183,20 @@ public final class Constants
   }
 
   public static class ClawConstants {
-    public static final double k_f = 0.0001;
-    public static final double k_p = 0.00001;
-    public static final double k_i = 0.000001;
+    public static final double k_f = 0.00015;
+    public static final double k_p = 0.00005;
+    public static final double k_i = 0;
     public static final double k_d = 0;
 
-    public static final double k_stallCurrent = 0;
-    public static final double k_slowSpeed = 200;
+    public static final double k_stallCurrent = 50;
+    public static final double k_slowSpeed = 300;
 
-    public static final double k_inSpeed = 500;
-    public static final double k_outSpeed = -200;
+    public static final double k_inSpeed = 2000;
+    public static final double k_outSpeed = -500;
 
     public static final SparkFlexConfig clawConfig = new SparkFlexConfig();
     static {
-      clawConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      clawConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(60);
       clawConfig.inverted(true);
       clawConfig.closedLoop
             .pid(k_p, k_i, k_d)
@@ -223,21 +218,21 @@ public final class Constants
   public static class CANIDConstants {
     public static final int gyro = 0;
     public static final int fl_drive = 1;
-    public static final int fl_turn = 2; //
-    public static final int fr_drive = 3; //
-    public static final int fr_turn = 4; //
-    public static final int bl_drive = 5; //
-    public static final int bl_turn = 6; //
-    public static final int br_drive = 7; //
-    public static final int br_turn = 8; //
-    public static final int elev_leader = 10; //
+    public static final int fl_turn = 2; 
+    public static final int fr_drive = 3; 
+    public static final int fr_turn = 4; 
+    public static final int bl_drive = 5; 
+    public static final int bl_turn = 6; 
+    public static final int br_drive = 7; 
+    public static final int br_turn = 8; 
+    public static final int elev_leader = 10; 
     public static final int elev_follower = 11;
     public static final int arm = 12;
-    public static final int claw = 13; //
-    public static final int intake_pivot = 20; //
-    public static final int intake_roller = 21; //
-    public static final int climber = 30; //
-    public static final int climber_follow = 31; //
-    public static final int cage_grabber = 32; //
+    public static final int claw = 13; 
+    public static final int intake_pivot = 20; 
+    public static final int intake_roller = 21; 
+    public static final int climber = 30; 
+    public static final int climber_follow = 31; 
+    public static final int cage_grabber = 32; 
   }
 }

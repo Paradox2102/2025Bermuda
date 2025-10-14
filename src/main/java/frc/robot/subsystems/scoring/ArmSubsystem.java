@@ -28,13 +28,13 @@ import frc.robot.Constants.ArmConstants;
 
 public class ArmSubsystem extends SubsystemBase {
   public enum ArmState {
-    STOW(87.5),
+    STOW(80),
     HANDOFF(-90),
     L1(-10),
-    L2(60),
-    L3(60),
+    L2(35),
+    L3(35),
     L4(30),
-    GROUND_ALGAE(-20),
+    GROUND_ALGAE(-11),
     ALGAE_LOW(0),
     ALGAE_HIGH(0),
     PROCESSOR(0),
@@ -75,6 +75,7 @@ public class ArmSubsystem extends SubsystemBase {
     m_armMotor.configure(ArmConstants.armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_pid.setIZone(ArmConstants.k_izone);
     m_encoder = m_armMotor.getAbsoluteEncoder();
+    m_pid.enableContinuousInput(-270, 90);
   }
 
   public double getAngle() {
@@ -120,9 +121,9 @@ public class ArmSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_output = m_pid.calculate(getAngle(), getSetPoint()) + ArmConstants.k_f * Math.cos(Math.toRadians(getSetPoint()));
-    //m_armMotor.setVoltage(m_output);
+    m_armMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Arm Angle", getAngle());
-    //SmartDashboard.putNumber("Arm Current", m_armMotorSim.getAppliedOutput());
+    SmartDashboard.putNumber("Arm voltage", m_output);
   }
 
   public void simulationPeriodic() {

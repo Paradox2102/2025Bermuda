@@ -4,9 +4,7 @@
 
 package frc.robot.subsystems.climber;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -26,7 +24,7 @@ public class ClimberSubsystem extends SubsystemBase {
   public enum ClimberState {
     STOW(0),
     EXTEND(90),
-    CLIMB(45);
+    CLIMB(25);
 
     private double m_angle;
     
@@ -53,7 +51,7 @@ public class ClimberSubsystem extends SubsystemBase {
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem() {
     m_climberMotor.configure(ClimberConstants.climberConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    m_climberFollow.configure(ClimberConstants.climberConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_climberFollow.configure(ClimberConstants.followConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public double getPosition() {
@@ -74,7 +72,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
   public Command runOut(boolean in) {
     return Commands.runEnd(() ->
-    m_pid.setReference(in ? 0.1 : -0.1, ControlType.kDutyCycle), 
+    m_pid.setReference(in ? 60 : -60, ControlType.kCurrent), 
     () -> m_pid.setReference(0, ControlType.kDutyCycle)
      ,this);
   }
