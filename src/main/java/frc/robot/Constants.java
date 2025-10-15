@@ -85,7 +85,7 @@ public final class Constants
     public static final double k_maxAccel = 25;
     public static final double k_maxVel = 2;
 
-    public static final double k_dunkHeight = 0.1;
+    public static final double k_dunkHeight = 0.75;
 
     public static final SparkFlexConfig elevatorConfig = new SparkFlexConfig();
     public static final SparkFlexConfig followConfig = new SparkFlexConfig();
@@ -111,7 +111,7 @@ public final class Constants
     public static final double k_d = 0;//0.001;
     public static final double k_f = 0.75;
 
-    public static final double k_dunkAngle = 40;
+    public static final double k_dunkAngle = 50;
 
     public static final SparkFlexConfig armConfig = new SparkFlexConfig();
     static {
@@ -169,7 +169,7 @@ public final class Constants
 
     public static final double k_inSpeed = 3000;
     public static final double k_outSpeed = -4000;
-    public static final double k_stallSpeed = 0;
+    public static final double k_stallSpeed = 1000;
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
     static {
@@ -191,7 +191,7 @@ public final class Constants
     public static final double k_stallCurrent = 50;
     public static final double k_slowSpeed = 300;
 
-    public static final double k_inSpeed = 2000;
+    public static final double k_inSpeed = 6000;
     public static final double k_outSpeed = -500;
 
     public static final SparkFlexConfig clawConfig = new SparkFlexConfig();

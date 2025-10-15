@@ -77,7 +77,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup scoreCoralResetElev() {
-    return SequentialWithRequirements(new SequentialCommandGroup(RunForTime(m_armSubsystem.scoreCoral().alongWith(m_elevatorSubsystem.scoreCoral()), 1), /*SwitchModes(RobotState.INTAKE),*/ m_elevatorSubsystem.setPosition(ElevatorState.STOW).alongWith(m_armSubsystem.setPosition(ArmState.STOW))));
+    return SequentialWithRequirements(new SequentialCommandGroup(RunForTime(m_armSubsystem.scoreCoral().alongWith(new WaitCommand(0.05).andThen(m_elevatorSubsystem.scoreCoral())), 1), SwitchModes(RobotState.INTAKE), m_elevatorSubsystem.setPosition(ElevatorState.STOW).alongWith(m_armSubsystem.setPosition(ArmState.STOW))));
   }
 
   public SequentialCommandGroup scoreLevel(ElevatorState level, Trigger trigger, Boolean left) {
@@ -123,6 +123,7 @@ public class Superstructure extends SubsystemBase {
   private Command SwitchModes(RobotState state) {
     return Commands.runOnce(() -> {
       m_state = state;
+      System.out.println("SwitchModes");
     });
   }
 
@@ -143,7 +144,11 @@ public class Superstructure extends SubsystemBase {
   }
 
   private ParallelDeadlineGroup RunForTime(Command command, double time) {
-    return new ParallelDeadlineGroup(new WaitCommand(time), command);
+    return new ParallelDeadlineGroup(new WaitCommand(time), command, Commands.startEnd(() -> {
+      System.out.println("runfortime start");
+    }, () -> {
+      System.out.println("runfortime end");
+    }));
   }
 
   @Override

@@ -33,7 +33,7 @@ public class ArmSubsystem extends SubsystemBase {
     L1(-10),
     L2(35),
     L3(35),
-    L4(30),
+    L4(35),
     GROUND_ALGAE(-11),
     ALGAE_LOW(0),
     ALGAE_HIGH(0),
@@ -96,6 +96,7 @@ public class ArmSubsystem extends SubsystemBase {
   public Command scoreCoral() {
     return Commands.runOnce(() -> {
       m_setPoint = m_state.getAngle() - ArmConstants.k_dunkAngle;
+      System.out.println("Arm scoreCoral");
     }, this);
   }
 

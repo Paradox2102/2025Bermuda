@@ -33,7 +33,7 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.7, ArmState.HANDOFF, "Handoff"),
+    HANDOFF(0.7025, ArmState.HANDOFF, "Handoff"),
     L1(0.4, ArmState.L1, "L1"),
     L2(0.35, ArmState.L2, "L2"),
     L3(0.65, ArmState.L3, "L3"),
@@ -137,6 +137,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Command scoreCoral() {
     return Commands.runOnce(() -> {
       m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
+      System.out.println("Elevator Score");
     }, this);
   }
 
