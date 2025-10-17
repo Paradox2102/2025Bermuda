@@ -27,7 +27,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_pid = m_rollerMotor.getClosedLoopController();
 
   public final Trigger pickCoral = new Trigger(
-      () -> getCurrentDraw() > IntakeRollerConstants.k_stallCurrent && getSpeed() < IntakeRollerConstants.k_inSpeed - IntakeRollerConstants.k_slowSpeed)
+      () -> getCurrentDraw() > IntakeRollerConstants.k_stallCurrent)
       .debounce(.5, DebounceType.kRising);
   private boolean m_hasCoral = false;
 

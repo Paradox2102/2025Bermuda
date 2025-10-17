@@ -24,7 +24,7 @@ public class ClimberSubsystem extends SubsystemBase {
   public enum ClimberState {
     STOW(0),
     EXTEND(90),
-    CLIMB(25);
+    CLIMB(-90);
 
     private double m_angle;
     

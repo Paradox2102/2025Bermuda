@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.scoring;
 
+import java.util.function.BooleanSupplier;
+
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -30,11 +32,11 @@ public class ArmSubsystem extends SubsystemBase {
   public enum ArmState {
     STOW(80),
     HANDOFF(-90),
-    L1(-10),
-    L2(35),
-    L3(35),
-    L4(35),
-    GROUND_ALGAE(-11),
+    L1(-8.5),
+    L2(40),
+    L3(40),
+    L4(45),
+    GROUND_ALGAE(-10),
     ALGAE_LOW(0),
     ALGAE_HIGH(0),
     PROCESSOR(0),
@@ -103,6 +105,12 @@ public class ArmSubsystem extends SubsystemBase {
   public Command switchSides(boolean invert) {
     return Commands.runOnce(() -> {
       m_invert = invert;
+    }, this);
+  }
+
+  public Command switchSides() {
+    return Commands.runOnce(() -> {
+      m_invert = !m_invert;
     }, this);
   }
 

@@ -81,7 +81,7 @@ public class ClawSubsystem extends SubsystemBase {
     return Commands.runOnce(
       () -> {
       if(m_isAlgae) {
-        m_pid.setReference(40, ControlType.kCurrent); 
+        m_pid.setReference(0, ControlType.kCurrent); 
       } else {
         m_pid.setReference(0, ControlType.kVoltage);
       }

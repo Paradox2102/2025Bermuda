@@ -305,35 +305,35 @@ public class Vision {
      * Left Camera
      */
     LEFT_FRONT("fl",
-        new Rotation3d(0, Math.toRadians(30), Math.toRadians(45)),
-        new Translation3d(Units.inchesToMeters(-3.0213),
-            Units.inchesToMeters(7.9039),
-            Units.inchesToMeters(20.236)),
+        new Rotation3d(0, Math.toRadians(45), Math.toRadians(45)),
+        new Translation3d(Units.inchesToMeters(-3.037),
+            Units.inchesToMeters(7.841),
+            Units.inchesToMeters(29.806)),
         VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
     /**
      * Right Camera
      */
     LEFT_BACK("bl",
-        new Rotation3d(0, Math.toRadians(30), Math.toRadians(120)),
-        new Translation3d(Units.inchesToMeters(-5.6154),
-            Units.inchesToMeters(8.2282),
-            Units.inchesToMeters(20.236)),
+        new Rotation3d(0, Math.toRadians(45), Math.toRadians(120)),
+        new Translation3d(Units.inchesToMeters(-5.574),
+            Units.inchesToMeters(8.173),
+            Units.inchesToMeters(29.81)),
         VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
     /**
      * Center Camera
      */
     RIGHT_FRONT("fr",
-        new Rotation3d(0, Units.degreesToRadians(30), Units.degreesToRadians(315)),
-        new Translation3d(Units.inchesToMeters(-3.0213),
-            Units.inchesToMeters(-7.9039),
-            Units.inchesToMeters(20.236)),
+        new Rotation3d(0, Units.degreesToRadians(45), Units.degreesToRadians(315)),
+        new Translation3d(Units.inchesToMeters(-3.037),
+            Units.inchesToMeters(-7.841),
+            Units.inchesToMeters(29.806)),
         VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
 
     RIGHT_BACK("br", 
-        new Rotation3d(0, Units.degreesToRadians(30),Units.degreesToRadians(240)), 
-        new Translation3d(Units.inchesToMeters(-5.6154),
-          Units.inchesToMeters(-8.2282),
-          Units.inchesToMeters(20.236)), 
+        new Rotation3d(0, Units.degreesToRadians(45),Units.degreesToRadians(240)), 
+        new Translation3d(Units.inchesToMeters(-5.574),
+          Units.inchesToMeters(-8.173),
+          Units.inchesToMeters(29.81)), 
         VecBuilder.fill(4,4,8), VecBuilder.fill(0.5,0.5,1));
 
     /**

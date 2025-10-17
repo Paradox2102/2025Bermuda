@@ -53,7 +53,7 @@ public final class Constants
 
     public static final double k_f = 0.5;
     public static final double k_p = 0.0225;
-    public static final double k_i = 0.025;
+    public static final double k_i = 0.05;
     public static final double k_izone = 15;
 
     public static final SparkFlexConfig pivotConfig = new SparkFlexConfig();
@@ -72,25 +72,24 @@ public final class Constants
     public static final double k_deadzone = 0.25;
     public static final double k_rotationsToMeters = 0.023350521;
 
-    public static final double k_p = 0.025;
+    public static final double k_p = 0;
     public static final double k_i = 0;
     // public static final double k_izone = 0.1;
-    public static final double k_d = 0.5;
+    public static final double k_d = 0;
 
-    public static final double k_s = 0;
     //found by reca.lc linear mechanism model
     public static final double k_g = 0.25;
-    public static final double k_v = 4.69;
-    public static final double k_a = 0.05;
-    public static final double k_maxAccel = 25;
-    public static final double k_maxVel = 2;
+    public static final double k_v = 0;//4.69;
+    public static final double k_a = 0;//0.05;
+    public static final double k_maxAccel = 0.3;//25;
+    public static final double k_maxVel = 0.3;//2;
 
-    public static final double k_dunkHeight = 0.75;
+    public static final double k_dunkHeight = 0.25;
 
     public static final SparkFlexConfig elevatorConfig = new SparkFlexConfig();
     public static final SparkFlexConfig followConfig = new SparkFlexConfig();
     static {
-      elevatorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      elevatorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(60);
       elevatorConfig.inverted(false);
       elevatorConfig.encoder.positionConversionFactor(k_rotationsToMeters).velocityConversionFactor(k_rotationsToMeters);
       followConfig.apply(elevatorConfig).follow(CANIDConstants.elev_leader, true);
@@ -105,13 +104,13 @@ public final class Constants
     public static final double k_momentOfInertia = 0.308;
     public static final double k_armLengthMeters = 0.543;
 
-    public static final double k_p = 0.035;
-    public static final double k_i = 0;//0.005;
-    public static final double k_izone = 0;
-    public static final double k_d = 0;//0.001;
-    public static final double k_f = 0.75;
+    public static final double k_p = 0.1;
+    public static final double k_i = 0.1;
+    public static final double k_izone = 10;
+    public static final double k_d = 0.01;//0.001;
+    public static final double k_f = 0.5;
 
-    public static final double k_dunkAngle = 50;
+    public static final double k_dunkAngle = 40;
 
     public static final SparkFlexConfig armConfig = new SparkFlexConfig();
     static {
@@ -125,16 +124,16 @@ public final class Constants
   }
 
   public static class ClimberConstants {
-    public static final double k_deadzone = 0.1;
+    public static final double k_deadzone = 5;
 
-    public static final double k_p = 0.005;
+    public static final double k_p = 0.015;
 
     public static final SparkFlexConfig climberConfig = new SparkFlexConfig();
     public static final SparkFlexConfig followConfig = new SparkFlexConfig();
     static {
       climberConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
       climberConfig.inverted(false);
-      climberConfig.encoder.positionConversionFactor(90/25);
+      climberConfig.encoder.positionConversionFactor(90/44.43);
       climberConfig.closedLoop
             .p(k_p)
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
@@ -150,7 +149,7 @@ public final class Constants
 
     public static final SparkFlexConfig cageConfig = new SparkFlexConfig();
     static {
-      cageConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      cageConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(40);
       cageConfig.inverted(false);
       cageConfig.closedLoop
             .pid(k_p, k_i, 0)
@@ -164,8 +163,8 @@ public final class Constants
     public static final double k_i = 0;
     public static final double k_d = 0;
 
-    public static final double k_stallCurrent = 75;
-    public static final double k_slowSpeed = 1500;
+    public static final double k_stallCurrent = 40;
+    public static final double k_slowSpeed = 0;
 
     public static final double k_inSpeed = 3000;
     public static final double k_outSpeed = -4000;
@@ -173,7 +172,7 @@ public final class Constants
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
     static {
-      rollerConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+      rollerConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(60);
       rollerConfig.inverted(true);
       rollerConfig.closedLoop
             .pid(k_p, k_i, k_d)
@@ -185,14 +184,14 @@ public final class Constants
   public static class ClawConstants {
     public static final double k_f = 0.00015;
     public static final double k_p = 0.00005;
-    public static final double k_i = 0;
+    public static final double k_i = 0.000001;
     public static final double k_d = 0;
 
     public static final double k_stallCurrent = 50;
     public static final double k_slowSpeed = 300;
 
     public static final double k_inSpeed = 6000;
-    public static final double k_outSpeed = -500;
+    public static final double k_outSpeed = -1500;
 
     public static final SparkFlexConfig clawConfig = new SparkFlexConfig();
     static {

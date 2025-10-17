@@ -33,16 +33,16 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.7025, ArmState.HANDOFF, "Handoff"),
-    L1(0.4, ArmState.L1, "L1"),
-    L2(0.35, ArmState.L2, "L2"),
-    L3(0.65, ArmState.L3, "L3"),
+    HANDOFF(0.7075, ArmState.HANDOFF, "Handoff"),
+    L1(0.52, ArmState.L1, "L1"),
+    L2(0.4, ArmState.L2, "L2"),
+    L3(0.75, ArmState.L3, "L3"),
     L4(1.35, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
-    ALGAE_LOW(0.3, ArmState.ALGAE_LOW, "Algae Low"),
-    ALGAE_HIGH(0.5, ArmState.ALGAE_HIGH, "Algae High"),
+    ALGAE_LOW(0.75, ArmState.ALGAE_LOW, "Algae Low"),
+    ALGAE_HIGH(1, ArmState.ALGAE_HIGH, "Algae High"),
     PROCESSOR(0, ArmState.PROCESSOR, "Processor"),
-    NET(1.42, ArmState.NET, "Net"),
+    NET(1, ArmState.NET, "Net"),
     LOLLIPOP(0, ArmState.LOLLIPOP, "Lollipop");
 
     private double m_height;
@@ -75,10 +75,10 @@ public class ElevatorSubsystem extends SubsystemBase {
   private ElevatorState m_state = ElevatorState.STOW;
 
   //kv and ka calculated from reca.lc
-  private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, m_state.getHeight());
+  //private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, m_state.getHeight());
 
   private ProfiledPIDController m_pid = new ProfiledPIDController(ElevatorConstants.k_p, ElevatorConstants.k_i, ElevatorConstants.k_d, new Constraints(ElevatorConstants.k_maxVel, ElevatorConstants.k_maxAccel), 0.02);
-  private ElevatorFeedforward m_feedforward = new ElevatorFeedforward(ElevatorConstants.k_s, ElevatorConstants.k_g, ElevatorConstants.k_v, ElevatorConstants.k_a);
+  private ElevatorFeedforward m_feedforward = new ElevatorFeedforward(0, ElevatorConstants.k_g, ElevatorConstants.k_v, ElevatorConstants.k_a);
   private double m_output = 0;
 
   private double m_simHeight = 0;
@@ -99,7 +99,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_leadMotor.configure(ElevatorConstants.elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_followMotor.configure(ElevatorConstants.followConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_pid.reset(0,0);
-    //m_pid.setIZone(ElevatorConstants.k_izone);
+    // m_pid.setIZone(ElevatorConstants.k_izone);
   }
 
   public double getPosition() {
@@ -114,7 +114,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     if(RobotBase.isReal()){
       return m_encoder.getVelocity();
     } else {
-      return m_elevatorSim.getVelocityMetersPerSecond();
+      return 0;//m_elevatorSim.getVelocityMetersPerSecond();
     }
   }
 
@@ -126,9 +126,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     }, this).until(atPosition);
   }
 
-  public Command runUp(){
+  public Command runManual(boolean up){
     return Commands.runEnd(() -> {
-      m_leadMotor.setVoltage(6);
+      m_leadMotor.setVoltage(up ? 6 : -6);
     }, ()-> {
       m_leadMotor.setVoltage(0);
     }, this);
@@ -138,6 +138,12 @@ public class ElevatorSubsystem extends SubsystemBase {
     return Commands.runOnce(() -> {
       m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
       System.out.println("Elevator Score");
+    }, this);
+  }
+
+  public Command goUp() {
+    return Commands.runOnce(() -> {
+      m_setPoint = m_state.getHeight() + 0.15;
     }, this);
   }
 
@@ -165,14 +171,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("velocity", getVelocity());
   }
 
-  public void simulationPeriodic() {
-    m_elevatorSim.setInput(m_motorSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
-    m_elevatorSim.update(0.02);
-    m_motorSim.iterate(
-      Units.radiansPerSecondToRotationsPerMinute(m_elevatorSim.getVelocityMetersPerSecond()),
-      RoboRioSim.getVInVoltage(), 0.02);
-    RoboRioSim.setVInVoltage(
-        BatterySim.calculateDefaultBatteryLoadedVoltage(m_elevatorSim.getCurrentDrawAmps()));
-    m_simHeight = m_elevatorSim.getPositionMeters();
-  }
+  // public void simulationPeriodic() {
+  //   m_elevatorSim.setInput(m_motorSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
+  //   m_elevatorSim.update(0.02);
+  //   m_motorSim.iterate(
+  //     Units.radiansPerSecondToRotationsPerMinute(m_elevatorSim.getVelocityMetersPerSecond()),
+  //     RoboRioSim.getVInVoltage(), 0.02);
+  //   RoboRioSim.setVInVoltage(
+  //       BatterySim.calculateDefaultBatteryLoadedVoltage(m_elevatorSim.getCurrentDrawAmps()));
+  //   m_simHeight = m_elevatorSim.getPositionMeters();
+  // }
 }
