@@ -69,7 +69,7 @@ public final class Constants
   }
 
   public static class ElevatorConstants {
-    public static final double k_deadzone = 0.1;
+    public static final double k_deadzone = 0.25;
     public static final double k_rotationsToMeters = 0.023350521;
 
     public static final double k_p = 0.0125;
@@ -79,7 +79,7 @@ public final class Constants
 
     //found by reca.lc linear mechanism model
     public static final double k_g = 0.375;
-    public static final double k_v = 2.35;//4.69;
+    public static final double k_v = 3.5;//4.69;
     public static final double k_a = 0.05;//0.05;
     public static final double k_maxAccel = 25;
     public static final double k_maxVel = 2;
@@ -98,7 +98,7 @@ public final class Constants
 
   public static class ArmConstants {
     public static final double k_deadzone = 5;
-    public static final double k_resetPosition = 0.2502;
+    public static final double k_resetPosition = 0.877;
 
     public static final double k_gearRatio = 27;
     public static final double k_momentOfInertia = 0.308;
@@ -159,7 +159,7 @@ public final class Constants
 
   public static class IntakeRollerConstants {
     public static final double k_f = 0.00027;
-    public static final double k_p = 0.00005;
+    public static final double k_p = 0.000075;
     public static final double k_i = 0;
     public static final double k_d = 0;
 
@@ -172,7 +172,7 @@ public final class Constants
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
     static {
-      rollerConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(70);
+      rollerConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
       rollerConfig.inverted(true);
       rollerConfig.closedLoop
             .pid(k_p, k_i, k_d)

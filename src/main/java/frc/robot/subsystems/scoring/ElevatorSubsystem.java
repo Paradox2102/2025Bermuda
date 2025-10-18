@@ -33,11 +33,11 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.72, ArmState.HANDOFF, "Handoff"),
+    HANDOFF(0.725, ArmState.HANDOFF, "Handoff"),
     L1(0.45, ArmState.L1, "L1"),
     L2(0.375, ArmState.L2, "L2"),
     L3(0.75, ArmState.L3, "L3"),
-    L4(1.35, ArmState.L4, "L4"),
+    L4(1.4, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
     ALGAE_LOW(0.75, ArmState.ALGAE_LOW, "Algae Low"),
     ALGAE_HIGH(1, ArmState.ALGAE_HIGH, "Algae High"),
@@ -200,7 +200,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Output", m_output);
     SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));
     SmartDashboard.putNumber("Pid", pid);
-    SmartDashboard.putString("level", m_algaeLevel.getName());
+    SmartDashboard.putString("level", m_state.getName());
     SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
     SmartDashboard.putNumber("velocity", getVelocity());
     m_oldVel = getVelocity();

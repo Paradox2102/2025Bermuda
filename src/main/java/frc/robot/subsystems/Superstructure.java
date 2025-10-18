@@ -101,7 +101,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup goToHandoff() {
-    return SequentialWithRequirements(new SequentialCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF), new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.HANDOFF), m_pivotSubsystem.setPosition(IntakeState.HANDOFF))));
+    return SequentialWithRequirements(new SequentialCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF), m_pivotSubsystem.setPosition(IntakeState.HANDOFF), m_armSubsystem.setPosition(ArmState.HANDOFF)));
   }
 
   public SequentialCommandGroup handoff() {

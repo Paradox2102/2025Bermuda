@@ -79,6 +79,12 @@ public class IntakePivotSubsystem extends SubsystemBase {
     }
   }
 
+  public Command runDown() {
+    return Commands.run(() -> {
+      m_pivotMotor.setVoltage(-3);
+    });
+  }
+
   //subsystem .run method can be used instead
 
   public Command setPosition(IntakeState pos) {
