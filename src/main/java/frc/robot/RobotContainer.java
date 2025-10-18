@@ -32,6 +32,7 @@ import frc.robot.subsystems.intake.IntakePivotSubsystem.IntakeState;
 import frc.robot.subsystems.scoring.ArmSubsystem;
 import frc.robot.subsystems.scoring.ClawSubsystem;
 import frc.robot.subsystems.scoring.ElevatorSubsystem;
+import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 import frc.robot.subsystems.scoring.ElevatorSubsystem.ElevatorState;
 
 import java.io.File;
@@ -198,7 +199,7 @@ public class RobotContainer {
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.b().whileTrue(new ConditionalCommand(
-        m_climberSubsystem.runOut(false), 
+        m_climberSubsystem.runOut(false).alongWith(m_cageSubsystem.stop()), 
         m_superstructure.scoreLevel(ElevatorState.L2, false), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
@@ -208,10 +209,10 @@ public class RobotContainer {
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_operatorController.button(1).onTrue(m_superstructure.cancelScoring());
-    m_operatorController.button(2).whileTrue(m_superstructure.climbSequence());
+    m_operatorController.button(2).whileTrue(m_climberSubsystem.runOut(true).alongWith(m_cageSubsystem.run(),  m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.ALGAE_LOW)), m_pivotSubsystem.setPosition(IntakeState.INTAKE)));
     m_operatorController.button(3).whileTrue(m_elevatorSubsystem.runManual(true));
     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
-    m_operatorController.button(5).whileTrue(m_climberSubsystem.runOut(true));
+    m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
     m_operatorController.button(6).onTrue(m_elevatorSubsystem.switchAlgae());
   }
 

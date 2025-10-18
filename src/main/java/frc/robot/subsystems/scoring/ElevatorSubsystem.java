@@ -35,8 +35,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     STOW(0, ArmState.STOW, "Stow"),
     HANDOFF(0.725, ArmState.HANDOFF, "Handoff"),
     L1(0.45, ArmState.L1, "L1"),
-    L2(0.375, ArmState.L2, "L2"),
-    L3(0.75, ArmState.L3, "L3"),
+    L2(0.4, ArmState.L2, "L2"),
+    L3(0.775, ArmState.L3, "L3"),
     L4(1.4, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
     ALGAE_LOW(0.75, ArmState.ALGAE_LOW, "Algae Low"),
@@ -75,7 +75,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   private ElevatorState m_state = ElevatorState.STOW;
   private boolean m_manual = false;
 
-  private ElevatorState m_algaeLevel = ElevatorState.ALGAE_HIGH;
+  private boolean m_isHighAlgae = true;
+  private Trigger m_algaeHigh = new Trigger(() -> m_isHighAlgae);
 
   //kv and ka calculated from reca.lc
   //private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, m_state.getHeight());
@@ -160,17 +161,17 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public Command switchAlgae() {
     return Commands.runOnce(() -> {
-      if(m_algaeLevel == ElevatorState.ALGAE_HIGH){
-        m_algaeLevel = ElevatorState.ALGAE_LOW;
+      if(m_algaeHigh.getAsBoolean()){
+        m_isHighAlgae = false;
       } else {
-        m_algaeLevel = ElevatorState.ALGAE_HIGH;
+        m_isHighAlgae = true;
       }
     });
   }
 
   public Command goUp() {
     return Commands.runOnce(() -> {
-      m_setPoint = m_state.getHeight() + 0.15;
+      m_setPoint = ElevatorState.HANDOFF.getHeight() + 0.15;
     }, this);
   }
 
@@ -182,8 +183,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     return m_setPoint;
   }
 
-  public ElevatorState getAlgaeLevel() {
-    return m_algaeLevel;
+  public Trigger getAlgaeLevel() {
+    return m_algaeHigh;
   }
 
   @Override

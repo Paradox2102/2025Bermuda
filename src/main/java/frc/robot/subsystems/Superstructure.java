@@ -73,15 +73,46 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup stow() {
-    return SequentialWithRequirements(new SequentialCommandGroup(new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.STOW)), m_elevatorSubsystem.setPosition(ElevatorState.STOW), m_clawSubsystem.stop(), m_cageSubsystem.stop(), m_rollerSubsystem.stop()));
+    return SequentialWithRequirements(
+      new SequentialCommandGroup(
+        new ParallelCommandGroup(
+          m_armSubsystem.setPosition(ArmState.STOW),
+          m_pivotSubsystem.setPosition(IntakeState.STOW)), 
+        m_elevatorSubsystem.setPosition(ElevatorState.STOW), 
+        m_clawSubsystem.stop(), 
+        m_cageSubsystem.stop(), 
+        m_rollerSubsystem.stop()));
   }
 
   public SequentialCommandGroup goToLevel(ElevatorState state) {
-    return SequentialWithRequirements(new SequentialCommandGroup(m_pivotSubsystem.setPosition(IntakeState.STOW).alongWith(m_elevatorSubsystem.goUp()), SetScoring(ElevatorState.STOW), m_armSubsystem.setPosition(state.getArmPos()).alongWith(m_elevatorSubsystem.setPosition(state))));
+    return SequentialWithRequirements(
+      new SequentialCommandGroup(
+        m_pivotSubsystem.setPosition(IntakeState.STOW)
+        .alongWith(
+          new ConditionalCommand(m_elevatorSubsystem.goUp(), 
+          new InstantCommand(),
+          () -> m_elevatorSubsystem.getSetPoint() == ElevatorState.HANDOFF.getHeight())),
+        SetScoring(ElevatorState.STOW),
+        m_armSubsystem.setPosition(state.getArmPos())
+        .alongWith(
+          m_elevatorSubsystem.setPosition(state))));
   }
 
   public SequentialCommandGroup scoreCoralResetElev() {
-    return SequentialWithRequirements(new SequentialCommandGroup(m_clawSubsystem.stop(), RunForTime(m_armSubsystem.scoreCoral().alongWith(new WaitCommand(0.15).andThen(m_elevatorSubsystem.scoreCoral())), 1), SwitchModes(RobotState.INTAKE), SetScoring(ElevatorState.STOW), m_armSubsystem.setPosition(ArmState.STOW), m_elevatorSubsystem.setPosition(ElevatorState.STOW)));
+    return SequentialWithRequirements(
+      new SequentialCommandGroup(
+        m_clawSubsystem.stop(), 
+        m_armSubsystem.scoreCoral()
+        .alongWith(
+          new WaitCommand(0.15)
+          .andThen(
+            RunForTime(
+              m_elevatorSubsystem.scoreCoral(),
+               1))),
+      SwitchModes(RobotState.INTAKE),
+      SetScoring(ElevatorState.STOW), 
+      m_armSubsystem.setPosition(ArmState.STOW), 
+      m_elevatorSubsystem.setPosition(ElevatorState.STOW)));
   }
 
   public ConditionalCommand scoreLevel(ElevatorState level, Boolean left) {
@@ -113,7 +144,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup reefAlgae() {
-    return SequentialWithRequirements(new SequentialCommandGroup(SetScoring(ElevatorState.STOW), goToLevel(m_elevatorSubsystem.getAlgaeLevel()), m_clawSubsystem.intake(), m_clawSubsystem.setGamePiece(true)));
+    return SequentialWithRequirements(new SequentialCommandGroup(SetScoring(ElevatorState.STOW), goToLevel(m_elevatorSubsystem.getAlgaeLevel().getAsBoolean() ? ElevatorState.ALGAE_HIGH : ElevatorState.ALGAE_LOW), m_clawSubsystem.intake(), m_clawSubsystem.setGamePiece(true)));
   }
 
   public SequentialCommandGroup scoreAlgaeReset(boolean net) {
