@@ -114,8 +114,8 @@ public class SwerveSubsystem extends SubsystemBase {
             // updates better.
             m_swerveDrive.stopOdometryThread();
         }
-        //setupPathPlanner();
-        RobotModeTriggers.autonomous().onTrue(Commands.runOnce(this::zeroGyroWithAlliance));
+        setupPathPlanner();
+        //RobotModeTriggers.autonomous().onTrue(Commands.runOnce(this::zeroGyroWithAlliance));
     }
 
     /**
@@ -562,6 +562,12 @@ public class SwerveSubsystem extends SubsystemBase {
         m_swerveDrive.zeroGyro();
     }
 
+    public Command resetGyro() {
+        return Commands.runOnce(() -> {
+            zeroGyroWithAlliance();
+        });
+    }
+
     /**
      * Checks if the alliance is red, defaults to false if alliance isn't available.
      *
@@ -587,7 +593,7 @@ public class SwerveSubsystem extends SubsystemBase {
         } else {
             zeroGyro();
         }
-    }
+    } 
 
     /**
      * Sets the drive motors to brake/coast mode.

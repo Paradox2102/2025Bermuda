@@ -72,17 +72,17 @@ public final class Constants
     public static final double k_deadzone = 0.25;
     public static final double k_rotationsToMeters = 0.023350521;
 
-    public static final double k_p = 0;
+    public static final double k_p = 0.025;
     public static final double k_i = 0;
     // public static final double k_izone = 0.1;
-    public static final double k_d = 0;
+    public static final double k_d = 0.025;
 
     //found by reca.lc linear mechanism model
-    public static final double k_g = 0.25;
-    public static final double k_v = 0;//4.69;
-    public static final double k_a = 0;//0.05;
-    public static final double k_maxAccel = 0.3;//25;
-    public static final double k_maxVel = 0.3;//2;
+    public static final double k_g = 0.475;
+    public static final double k_v = 3.25;//4.69;
+    public static final double k_a = 0.05;//0.05;
+    public static final double k_maxAccel = 25;
+    public static final double k_maxVel = 2;
 
     public static final double k_dunkHeight = 0.25;
 
@@ -104,9 +104,9 @@ public final class Constants
     public static final double k_momentOfInertia = 0.308;
     public static final double k_armLengthMeters = 0.543;
 
-    public static final double k_p = 0.1;
-    public static final double k_i = 0.1;
-    public static final double k_izone = 10;
+    public static final double k_p = 0.15;
+    public static final double k_i = 0.025;
+    public static final double k_izone = 5;
     public static final double k_d = 0.01;//0.001;
     public static final double k_f = 0.5;
 
@@ -114,7 +114,7 @@ public final class Constants
 
     public static final SparkFlexConfig armConfig = new SparkFlexConfig();
     static {
-        armConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(80);
+        armConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(50);
         armConfig.inverted(false);
         armConfig.absoluteEncoder
               .zeroOffset(k_resetPosition)

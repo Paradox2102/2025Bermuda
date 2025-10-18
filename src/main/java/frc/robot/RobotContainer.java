@@ -13,6 +13,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
@@ -45,6 +47,7 @@ public class RobotContainer {
   final CommandXboxController m_driverController = new CommandXboxController(0);
   final CommandJoystick m_operatorController = new CommandJoystick(1);
 
+  SendableChooser<String> m_autoSelect;
   // The robot's subsystems and commands are defined here...
   public final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
       "swerve"));
@@ -113,7 +116,9 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the trigger bindings
+    addNamedCommands();
     configureBindings();
+    updateAutoChooser();
     DriverStation.silenceJoystickConnectionWarning(true);
   }
 
@@ -139,6 +144,8 @@ public class RobotContainer {
     } else {
       m_swerveSubsystem.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     }
+
+    m_driverController.povUp().onTrue(m_swerveSubsystem.resetGyro());
 
     //m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
     //m_clawSubsystem.setDefaultCommand(m_clawSubsystem.hold());
@@ -214,6 +221,13 @@ public class RobotContainer {
     m_operatorController.button(10).onTrue(m_pivotSubsystem.setPosition(IntakeState.STOW));
   }
 
+   private void updateAutoChooser() {
+    m_autoSelect = new SendableChooser<>();
+    m_autoSelect.addOption("1 L4", "1 L4");
+    m_autoSelect.addOption("Leave", "Leave");
+    m_autoSelect.addOption("Nothing", "Nothing");
+    SmartDashboard.putData(m_autoSelect);
+  }
 
   private void addNamedCommands() {
     NamedCommands.registerCommand("L4", m_superstructure.goToLevel(ElevatorState.L4));
@@ -228,7 +242,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return m_swerveSubsystem.getAutonomousCommand("none");
+    return m_swerveSubsystem.getAutonomousCommand(m_autoSelect.getSelected());
   }
 
   public void setMotorBrake(boolean brake) {

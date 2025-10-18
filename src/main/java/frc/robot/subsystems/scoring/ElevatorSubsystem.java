@@ -33,7 +33,7 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.7075, ArmState.HANDOFF, "Handoff"),
+    HANDOFF(0.711, ArmState.HANDOFF, "Handoff"),
     L1(0.52, ArmState.L1, "L1"),
     L2(0.4, ArmState.L2, "L2"),
     L3(0.75, ArmState.L3, "L3"),
@@ -82,6 +82,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private double m_output = 0;
 
   private double m_simHeight = 0;
+  private double m_oldVel = 0;
 
   private RelativeEncoder m_encoder = m_leadMotor.getEncoder();
   private DigitalInput m_limitSwitch = new DigitalInput(0);
@@ -157,6 +158,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("accel", (getVelocity() - m_oldVel)/0.02);
     // This method will be called once per scheduler run
     m_pid.setGoal(getSetPoint());
     double pid = m_pid.calculate(getPosition());
@@ -169,6 +171,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putString("level", m_state.getName());
     SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
     SmartDashboard.putNumber("velocity", getVelocity());
+    m_oldVel = getVelocity();
   }
 
   // public void simulationPeriodic() {

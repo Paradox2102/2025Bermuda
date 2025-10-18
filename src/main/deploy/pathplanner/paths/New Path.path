@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 5.762249999999999,
-        "y": 4.015249999999999
+        "y": 4.115
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.4545,
-        "y": 4.103
+        "y": 4.202750000000001
       },
       "isLocked": false,
       "linkedName": "branch 12"
