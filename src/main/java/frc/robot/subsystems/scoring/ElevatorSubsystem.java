@@ -134,7 +134,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Command runManual(boolean up){
     return Commands.runEnd(() -> {
       m_manual = true;
-      m_leadMotor.setVoltage(up ? 6 : -6);
+      m_leadMotor.setVoltage(up ? 3 : -3);
     }, ()-> {
       m_manual = false;
       m_leadMotor.setVoltage(0);
@@ -200,7 +200,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Output", m_output);
     SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));
     SmartDashboard.putNumber("Pid", pid);
-    SmartDashboard.putString("level", m_state.getName());
+    SmartDashboard.putString("level", m_algaeLevel.getName());
     SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
     SmartDashboard.putNumber("velocity", getVelocity());
     m_oldVel = getVelocity();

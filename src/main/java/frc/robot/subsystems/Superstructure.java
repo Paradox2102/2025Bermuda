@@ -73,7 +73,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup stow() {
-    return SequentialWithRequirements(new SequentialCommandGroup(new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.STOW)), m_elevatorSubsystem.setPosition(ElevatorState.STOW)));
+    return SequentialWithRequirements(new SequentialCommandGroup(new ParallelCommandGroup(m_armSubsystem.setPosition(ArmState.STOW), m_pivotSubsystem.setPosition(IntakeState.STOW)), m_elevatorSubsystem.setPosition(ElevatorState.STOW), m_clawSubsystem.stop(), m_cageSubsystem.stop(), m_rollerSubsystem.stop()));
   }
 
   public SequentialCommandGroup goToLevel(ElevatorState state) {
