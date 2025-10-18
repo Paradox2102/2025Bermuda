@@ -33,9 +33,9 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.711, ArmState.HANDOFF, "Handoff"),
-    L1(0.52, ArmState.L1, "L1"),
-    L2(0.4, ArmState.L2, "L2"),
+    HANDOFF(0.72, ArmState.HANDOFF, "Handoff"),
+    L1(0.45, ArmState.L1, "L1"),
+    L2(0.375, ArmState.L2, "L2"),
     L3(0.75, ArmState.L3, "L3"),
     L4(1.35, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
@@ -73,6 +73,9 @@ public class ElevatorSubsystem extends SubsystemBase {
   private SparkSim m_motorSim = new SparkSim(m_leadMotor, DCMotor.getNeoVortex(2));
 
   private ElevatorState m_state = ElevatorState.STOW;
+  private boolean m_manual = false;
+
+  private ElevatorState m_algaeLevel = ElevatorState.ALGAE_HIGH;
 
   //kv and ka calculated from reca.lc
   //private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, m_state.getHeight());
@@ -121,6 +124,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public Command setPosition(ElevatorState pos) {
     return Commands.run(() -> {
+      m_manual = false;
       m_state = pos;
       m_pid.reset(getPosition(),getVelocity());
       m_setPoint = m_state.getHeight();
@@ -129,8 +133,10 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public Command runManual(boolean up){
     return Commands.runEnd(() -> {
+      m_manual = true;
       m_leadMotor.setVoltage(up ? 6 : -6);
     }, ()-> {
+      m_manual = false;
       m_leadMotor.setVoltage(0);
     }, this);
   }
@@ -140,6 +146,26 @@ public class ElevatorSubsystem extends SubsystemBase {
       m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
       System.out.println("Elevator Score");
     }, this);
+  }
+
+  public Command handoff() {
+    return Commands.runEnd(() -> {
+      m_manual = true;
+      m_leadMotor.setVoltage(-0.1);
+    }, () -> {
+      m_manual = false;
+      m_leadMotor.setVoltage(0);
+    }, this);
+  }
+
+  public Command switchAlgae() {
+    return Commands.runOnce(() -> {
+      if(m_algaeLevel == ElevatorState.ALGAE_HIGH){
+        m_algaeLevel = ElevatorState.ALGAE_LOW;
+      } else {
+        m_algaeLevel = ElevatorState.ALGAE_HIGH;
+      }
+    });
   }
 
   public Command goUp() {
@@ -156,6 +182,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     return m_setPoint;
   }
 
+  public ElevatorState getAlgaeLevel() {
+    return m_algaeLevel;
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putNumber("accel", (getVelocity() - m_oldVel)/0.02);
@@ -163,7 +193,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_pid.setGoal(getSetPoint());
     double pid = m_pid.calculate(getPosition());
     m_output = pid + m_feedforward.calculate(m_pid.getSetpoint().velocity);
-    m_leadMotor.setVoltage(m_output);
+    if(!m_manual){
+      m_leadMotor.setVoltage(m_output);
+    }
     SmartDashboard.putNumber("Elev Height", getPosition());
     SmartDashboard.putNumber("Output", m_output);
     SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));

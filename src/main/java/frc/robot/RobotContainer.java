@@ -60,8 +60,6 @@ public class RobotContainer {
   public CageCatchSubsystem m_cageSubsystem = new CageCatchSubsystem();
   public Superstructure m_superstructure = new Superstructure(m_pivotSubsystem, m_rollerSubsystem, m_elevatorSubsystem, m_armSubsystem, m_clawSubsystem, m_climberSubsystem, m_cageSubsystem);
 
-  ElevatorState m_algaeLevel = ElevatorState.ALGAE_HIGH;
-
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled
    * by angular velocity.
@@ -175,7 +173,7 @@ public class RobotContainer {
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.leftBumper().onTrue(new ConditionalCommand(
-        m_superstructure.reefAlgae(m_algaeLevel), 
+        m_superstructure.reefAlgae(), 
         m_superstructure.scoreLevel(ElevatorState.L3, true), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
@@ -199,7 +197,7 @@ public class RobotContainer {
         m_superstructure.scoreLevel(ElevatorState.L3, false), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_driverController.b().onTrue(new ConditionalCommand(
+    m_driverController.b().whileTrue(new ConditionalCommand(
         m_climberSubsystem.runOut(false), 
         m_superstructure.scoreLevel(ElevatorState.L2, false), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
@@ -214,11 +212,7 @@ public class RobotContainer {
     m_operatorController.button(3).whileTrue(m_elevatorSubsystem.runManual(true));
     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
     m_operatorController.button(5).whileTrue(m_climberSubsystem.runOut(true));
-    m_operatorController.button(6).onTrue(m_armSubsystem.switchSides());
-    m_operatorController.button(7).onTrue(m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF));
-    m_operatorController.button(8).onTrue(m_elevatorSubsystem.setPosition(ElevatorState.STOW));
-    m_operatorController.button(9).onTrue(m_pivotSubsystem.setPosition(IntakeState.INTAKE));
-    m_operatorController.button(10).onTrue(m_pivotSubsystem.setPosition(IntakeState.STOW));
+    m_operatorController.button(6).onTrue(m_elevatorSubsystem.switchAlgae());
   }
 
    private void updateAutoChooser() {
@@ -232,7 +226,7 @@ public class RobotContainer {
   private void addNamedCommands() {
     NamedCommands.registerCommand("L4", m_superstructure.goToLevel(ElevatorState.L4));
     NamedCommands.registerCommand("Score", m_superstructure.scoreCoralResetElev());
-    NamedCommands.registerCommand("Algae High", m_superstructure.reefAlgae(ElevatorState.ALGAE_HIGH));
+    NamedCommands.registerCommand("Algae", m_superstructure.reefAlgae());
   }
 
   /**

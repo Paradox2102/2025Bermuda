@@ -105,15 +105,15 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup handoff() {
-    return SequentialWithRequirements(new ParallelDeadlineGroup(m_clawSubsystem.intake(), m_rollerSubsystem.eject()).andThen(SwitchModes(RobotState.CORAL).alongWith(m_rollerSubsystem.stop())));
+    return SequentialWithRequirements(new ParallelDeadlineGroup(m_clawSubsystem.intake(), m_elevatorSubsystem.handoff(), m_rollerSubsystem.eject()).andThen(SwitchModes(RobotState.CORAL).alongWith(m_rollerSubsystem.stop(), m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF))));
   }
 
   public ParallelDeadlineGroup groundAlgae() {
     return DeadlineWithRequirements(new ParallelDeadlineGroup(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true)), SetScoring(ElevatorState.STOW), new ParallelCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.GROUND_ALGAE), m_pivotSubsystem.setPosition(IntakeState.STOW)).andThen(m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.GROUND_ALGAE)))));
   }
 
-  public SequentialCommandGroup reefAlgae(ElevatorState algaeLevel) {
-    return SequentialWithRequirements(new SequentialCommandGroup(SetScoring(ElevatorState.STOW), goToLevel(algaeLevel), m_clawSubsystem.intake(), m_clawSubsystem.setGamePiece(true)));
+  public SequentialCommandGroup reefAlgae() {
+    return SequentialWithRequirements(new SequentialCommandGroup(SetScoring(ElevatorState.STOW), goToLevel(m_elevatorSubsystem.getAlgaeLevel()), m_clawSubsystem.intake(), m_clawSubsystem.setGamePiece(true)));
   }
 
   public SequentialCommandGroup scoreAlgaeReset(boolean net) {
@@ -141,7 +141,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup cancelScoring() {
-    return SequentialWithRequirements(new SequentialCommandGroup(SetScoring(ElevatorState.STOW), ToggleClimbing(false)));
+    return SequentialWithRequirements(new SequentialCommandGroup(SetScoring(ElevatorState.STOW), ToggleClimbing(false), SwitchModes(RobotState.INTAKE), m_armSubsystem.setPosition(ArmState.STOW), stow()));
   }
 
   private Command SwitchModes(RobotState state) {

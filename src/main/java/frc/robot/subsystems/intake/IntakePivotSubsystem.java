@@ -32,7 +32,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
     STOW(75),
     HANDOFF(125),
     INTAKE(0),
-    L1(85);
+    L1(86.5);
 
     private double m_angle;
     
