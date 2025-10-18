@@ -37,7 +37,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     L1(0.45, ArmState.L1, "L1"),
     L2(0.4, ArmState.L2, "L2"),
     L3(0.775, ArmState.L3, "L3"),
-    L4(1.4, ArmState.L4, "L4"),
+    L4(1.375, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
     ALGAE_LOW(0.75, ArmState.ALGAE_LOW, "Algae Low"),
     ALGAE_HIGH(1, ArmState.ALGAE_HIGH, "Algae High"),

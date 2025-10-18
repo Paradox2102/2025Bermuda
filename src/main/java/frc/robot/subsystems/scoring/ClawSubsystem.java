@@ -60,8 +60,10 @@ public class ClawSubsystem extends SubsystemBase {
   }
 
   public Command intake() {
-    return Commands.run(() -> {
+    return Commands.runEnd(() -> {
       run(true);
+    }, () -> {
+      stop();
     }, this).until(pickCoralAlgae);
   }
 

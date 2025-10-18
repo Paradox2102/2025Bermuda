@@ -98,7 +98,7 @@ public final class Constants
 
   public static class ArmConstants {
     public static final double k_deadzone = 5;
-    public static final double k_resetPosition = 0.9189;
+    public static final double k_resetPosition = 0.1179;
 
     public static final double k_gearRatio = 27;
     public static final double k_momentOfInertia = 0.308;
