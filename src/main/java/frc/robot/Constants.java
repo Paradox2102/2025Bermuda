@@ -72,15 +72,15 @@ public final class Constants
     public static final double k_deadzone = 0.25;
     public static final double k_rotationsToMeters = 0.023350521;
 
-    public static final double k_p = 0.0125;
+    public static final double k_p = 0;
     public static final double k_i = 0;
     // public static final double k_izone = 0.1;
-    public static final double k_d = 0.025;
+    public static final double k_d = 0;
 
     //found by reca.lc linear mechanism model
     public static final double k_g = 0.375;
     public static final double k_v = 3.5;//4.69;
-    public static final double k_a = 0.05;//0.05;
+    public static final double k_a = 0;//0.05;
     public static final double k_maxAccel = 25;
     public static final double k_maxVel = 2;
 

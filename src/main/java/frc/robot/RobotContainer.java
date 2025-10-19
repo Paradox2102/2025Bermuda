@@ -146,8 +146,8 @@ public class RobotContainer {
 
     m_driverController.povUp().onTrue(m_swerveSubsystem.resetGyro());
 
-    //m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
-    //m_clawSubsystem.setDefaultCommand(m_clawSubsystem.hold());
+    m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
+    m_clawSubsystem.setDefaultCommand(m_clawSubsystem.hold());
 
     if (Robot.isSimulation()) {
       Pose2d target = new Pose2d(new Translation2d(1, 4),
@@ -214,6 +214,8 @@ public class RobotContainer {
     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
     m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
     m_operatorController.button(6).onTrue(m_elevatorSubsystem.switchAlgae());
+    m_operatorController.button(7).onTrue(m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF));
+    m_operatorController.button(8).onTrue(m_elevatorSubsystem.setPosition(ElevatorState.STOW));
   }
 
    private void updateAutoChooser() {
