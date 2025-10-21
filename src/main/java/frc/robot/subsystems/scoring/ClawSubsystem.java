@@ -69,7 +69,7 @@ public class ClawSubsystem extends SubsystemBase {
 
   public Command eject() {
     return Commands.run(() -> {
-      run(false);
+      m_clawMotor.setVoltage(-12);
     },this);
   }
 
@@ -79,11 +79,15 @@ public class ClawSubsystem extends SubsystemBase {
     }, this);
   }
 
+  public boolean isAlgae() {
+    return m_isAlgae;
+  }
+
   public Command hold() {
     return Commands.runOnce(
       () -> {
       if(m_isAlgae) {
-        m_pid.setReference(0, ControlType.kCurrent); 
+        m_pid.setReference(8, ControlType.kVoltage); 
       } else {
         m_pid.setReference(0, ControlType.kVoltage);
       }

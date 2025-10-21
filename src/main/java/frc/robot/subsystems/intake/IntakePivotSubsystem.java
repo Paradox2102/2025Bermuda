@@ -30,7 +30,7 @@ import frc.robot.Constants.IntakePivotConstants;
 public class IntakePivotSubsystem extends SubsystemBase {
   public enum IntakeState {
     STOW(75),
-    HANDOFF(125),
+    HANDOFF(122),
     INTAKE(0),
     L1(86.5);
 

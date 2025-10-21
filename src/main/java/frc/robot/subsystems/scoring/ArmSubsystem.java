@@ -34,13 +34,12 @@ public class ArmSubsystem extends SubsystemBase {
     HANDOFF(-90),
     L1(-8.5),
     L2(35),
-    L3(35),
-    L4(35),
+    L3(37.5),
+    L4(37.5),
     GROUND_ALGAE(-10),
-    ALGAE_LOW(0),
-    ALGAE_HIGH(0),
+    ALGAE(0),
     PROCESSOR(0),
-    NET(60),
+    NET(75),
     LOLLIPOP(-10);
 
     private double m_angle;
@@ -71,7 +70,7 @@ public class ArmSubsystem extends SubsystemBase {
   private double m_setPoint = m_state.getAngle();
 
   public Trigger atPosition = new Trigger(
-    () -> Math.abs(getAngle() - m_setPoint) < ArmConstants.k_deadzone);
+    () -> Math.abs(getAngle() - getSetPoint()) < ArmConstants.k_deadzone);
   /** Creates a new ArmSubsystem. */
   public ArmSubsystem() {
     m_armMotor.configure(ArmConstants.armConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

@@ -18,6 +18,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -33,16 +34,16 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.725, ArmState.HANDOFF, "Handoff"),
+    HANDOFF(0.715, ArmState.HANDOFF, "Handoff"),
     L1(0.45, ArmState.L1, "L1"),
     L2(0.4, ArmState.L2, "L2"),
     L3(0.775, ArmState.L3, "L3"),
-    L4(1.375, ArmState.L4, "L4"),
+    L4(1.4, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
-    ALGAE_LOW(0.75, ArmState.ALGAE_LOW, "Algae Low"),
-    ALGAE_HIGH(1, ArmState.ALGAE_HIGH, "Algae High"),
+    ALGAE_LOW(0.75, ArmState.ALGAE, "Algae Low"),
+    ALGAE_HIGH(1.1, ArmState.ALGAE, "Algae High"),
     PROCESSOR(0, ArmState.PROCESSOR, "Processor"),
-    NET(1, ArmState.NET, "Net"),
+    NET(1.5, ArmState.NET, "Net"),
     LOLLIPOP(0, ArmState.LOLLIPOP, "Lollipop");
 
     private double m_height;
@@ -76,7 +77,6 @@ public class ElevatorSubsystem extends SubsystemBase {
   private boolean m_manual = false;
 
   private boolean m_isHighAlgae = true;
-  private Trigger m_algaeHigh = new Trigger(() -> m_isHighAlgae);
 
   //kv and ka calculated from reca.lc
   //private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, m_state.getHeight());
@@ -142,6 +142,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     }, this);
   }
 
+  public Command runDownFast(){
+    return Commands.runEnd(() -> {
+      m_manual = true;
+      m_leadMotor.setVoltage(-6);
+    }, ()-> {
+      m_manual = false;
+      m_leadMotor.setVoltage(0);
+    }, this);
+  }
+
   public Command scoreCoral() {
     return Commands.runOnce(() -> {
       m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
@@ -161,12 +171,21 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public Command switchAlgae() {
     return Commands.runOnce(() -> {
-      if(m_algaeHigh.getAsBoolean()){
+      if(m_isHighAlgae){
         m_isHighAlgae = false;
       } else {
         m_isHighAlgae = true;
       }
     });
+  }
+
+  public Command deployAlgae() {
+    return Commands.run(() -> {
+      m_manual = false;
+      m_state = m_isHighAlgae ? ElevatorState.ALGAE_HIGH : ElevatorState.ALGAE_LOW;
+      m_pid.reset(getPosition(),getVelocity());
+      m_setPoint = m_state.getHeight();
+    }, this).until(atPosition);
   }
 
   public Command goUp() {
@@ -183,8 +202,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     return m_setPoint;
   }
 
-  public Trigger getAlgaeLevel() {
-    return m_algaeHigh;
+  public boolean getAlgaeLevel() {
+    return m_isHighAlgae;
   }
 
   @Override
@@ -193,7 +212,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
     m_pid.setGoal(getSetPoint());
     double pid = m_pid.calculate(getPosition());
-    m_output = pid + m_feedforward.calculate(m_pid.getSetpoint().velocity);
+    double ff = m_feedforward.calculate(m_pid.getSetpoint().velocity); //* (12/RobotController.getBatteryVoltage());
+    m_output = pid + ff;
     if(!m_manual){
       m_leadMotor.setVoltage(m_output);
     }
@@ -204,6 +224,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putString("level", m_state.getName());
     SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
     SmartDashboard.putNumber("velocity", getVelocity());
+    SmartDashboard.putBoolean("is high algae", m_isHighAlgae);
     m_oldVel = getVelocity();
   }
 

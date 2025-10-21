@@ -209,7 +209,7 @@ public class RobotContainer {
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_operatorController.button(1).onTrue(m_superstructure.cancelScoring());
-    m_operatorController.button(2).whileTrue(m_climberSubsystem.runOut(true).alongWith(m_cageSubsystem.run(),  m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.ALGAE_LOW)), m_pivotSubsystem.setPosition(IntakeState.INTAKE)));
+    m_operatorController.button(2).whileTrue(m_climberSubsystem.runOut(true).alongWith(m_cageSubsystem.run(),  m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.ALGAE), m_elevatorSubsystem.runManual(false).until(() -> m_elevatorSubsystem.getPosition() < 0.05)), m_pivotSubsystem.setPosition(IntakeState.INTAKE), m_superstructure.SwitchModes(RobotState.INTAKE)));
     m_operatorController.button(3).whileTrue(m_elevatorSubsystem.runManual(true));
     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
     m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
