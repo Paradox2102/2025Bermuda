@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -110,6 +111,8 @@ public class RobotContainer {
       .translationHeadingOffset(Rotation2d.fromDegrees(
           0));
 
+    public Trigger shouldAutoAlign = new Trigger(() -> m_operatorController.getThrottle() > 0);
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -170,17 +173,21 @@ public class RobotContainer {
     // //Bind different commands to buttons depending on whether or not the robot holds a coral
     m_driverController.leftTrigger().onTrue(new ConditionalCommand(
         m_superstructure.groundAlgae(), 
-        m_superstructure.scoreLevel(ElevatorState.L4, true),
+        m_superstructure.scoreLevel(ElevatorState.L4).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, true)),
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.leftBumper().onTrue(new ConditionalCommand(
         m_superstructure.reefAlgae(), 
-        m_superstructure.scoreLevel(ElevatorState.L3, true), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+        m_superstructure.scoreLevel(ElevatorState.L3).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, true)), 
+        () -> m_superstructure.getState() == RobotState.INTAKE)).onFalse(
+            new ConditionalCommand(
+                m_superstructure.stow(),
+                new InstantCommand(), 
+                () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.a().onTrue(new ConditionalCommand(
         m_superstructure.scoreNet(), 
-        m_superstructure.scoreLevel(ElevatorState.L2, true), 
+        m_superstructure.scoreLevel(ElevatorState.L2).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, true)), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.y().onTrue(new ConditionalCommand(
@@ -188,24 +195,29 @@ public class RobotContainer {
         m_superstructure.clawL1(), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-     m_driverController.rightTrigger().toggleOnTrue(new ConditionalCommand(
+     m_driverController.rightTrigger().onTrue(new ConditionalCommand(
         m_superstructure.groundCoral().andThen(m_superstructure.goToHandoff()), 
-        m_superstructure.scoreLevel(ElevatorState.L4, false), 
+        m_superstructure.scoreLevel(ElevatorState.L4).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, false)), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.rightBumper().onTrue(new ConditionalCommand(
         m_superstructure.intakeL1(), 
-        m_superstructure.scoreLevel(ElevatorState.L3, false), 
+        m_superstructure.scoreLevel(ElevatorState.L3).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, false)), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.b().whileTrue(new ConditionalCommand(
         m_climberSubsystem.runOut(false).alongWith(m_cageSubsystem.stop()), 
-        m_superstructure.scoreLevel(ElevatorState.L2, false), 
+        new InstantCommand(), 
+        () -> m_superstructure.getState() == RobotState.INTAKE));
+    
+    m_driverController.b().onTrue(new ConditionalCommand(
+        new InstantCommand(),
+        m_superstructure.scoreLevel(ElevatorState.L2).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, false)),
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.x().onTrue(new ConditionalCommand(
         m_superstructure.goToHandoff().andThen(m_superstructure.handoff()), 
-        m_armSubsystem.switchSides(), 
+        /*m_armSubsystem.switchSides()*/new InstantCommand(), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_operatorController.button(1).onTrue(m_superstructure.cancelScoring());

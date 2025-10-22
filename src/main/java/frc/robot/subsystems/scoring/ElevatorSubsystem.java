@@ -89,7 +89,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private double m_oldVel = 0;
 
   private RelativeEncoder m_encoder = m_leadMotor.getEncoder();
-  private DigitalInput m_limitSwitch = new DigitalInput(0);
+  private DigitalInput m_limitSwitch = new DigitalInput(2);
   private double m_setPoint = m_state.getHeight();
   
   public Trigger atPosition = new Trigger(
@@ -225,6 +225,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
     SmartDashboard.putNumber("velocity", getVelocity());
     SmartDashboard.putBoolean("is high algae", m_isHighAlgae);
+    SmartDashboard.putBoolean("switch", m_limitSwitch.get());
     m_oldVel = getVelocity();
   }
 

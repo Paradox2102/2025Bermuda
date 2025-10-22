@@ -20,6 +20,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -27,12 +28,17 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Vision.Cameras;
 
 import java.io.File;
@@ -68,6 +74,16 @@ public class SwerveSubsystem extends SubsystemBase {
      * PhotonVision class to keep an accurate odometry.
      */
     private Vision m_vision;
+
+    private Pose2d[][] m_reefPoses = {
+        {new Pose2d(11.766,4, Rotation2d.fromDegrees(90)), new Pose2d(11.766,4.315, Rotation2d.fromDegrees(90))},
+        {new Pose2d(12.395,5.091, Rotation2d.fromDegrees(30)), new Pose2d(12.681,5.276, Rotation2d.fromDegrees(30))},
+        {new Pose2d(13.909,4.979, Rotation2d.fromDegrees(330)), new Pose2d(13.635,5.121, Rotation2d.fromDegrees(330))},
+        {new Pose2d(14.324,3.73, Rotation2d.fromDegrees(270)), new Pose2d(14.288,4.069, Rotation2d.fromDegrees(270))},
+        {new Pose2d(13.449,2.809, Rotation2d.fromDegrees(210)), new Pose2d(13.708,2.958, Rotation2d.fromDegrees(210))},
+        {new Pose2d(12.452,2.91, Rotation2d.fromDegrees(150)), new Pose2d(12.173,3.105, Rotation2d.fromDegrees(150))}};
+
+    private double m_fieldLength = 17.55;
 
     /**
      * Initialize {@link SwerveDrive} with the directory provided.
@@ -150,6 +166,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     @Override
     public void simulationPeriodic() {
+        SmartDashboard.putNumber("x", getPose().getX());
+        SmartDashboard.putNumber("y", getPose().getY());
     }
 
     /**
@@ -723,5 +741,35 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public SwerveDrive getSwerveDrive() {
         return m_swerveDrive;
+    }
+
+    public Pose2d[] getNearestReefFace() {
+        Pose2d[] face = new Pose2d[2];
+        double minDist = 100;
+        for(int i = 0; i < m_reefPoses.length; i++){
+            Translation2d leftBranch = m_reefPoses[i][0].getTranslation();
+            Translation2d rightBranch = m_reefPoses[i][1].getTranslation();
+            if(!isRedAlliance()){
+                leftBranch.plus(new Translation2d(-1 * (2 * leftBranch.getX() - m_fieldLength),0));
+                rightBranch.plus(new Translation2d(-1 * (2 * rightBranch.getX() - m_fieldLength),0));
+            }
+            double avgDist = (leftBranch.getDistance(getPose().getTranslation())+rightBranch.getDistance(getPose().getTranslation()))/2;
+            if(minDist > avgDist){
+                minDist = avgDist;
+                face = m_reefPoses[i];
+            }
+        }
+        return face;
+    }
+
+    public ConditionalCommand autoAlign(Trigger shouldAlign, boolean left) {
+        return Superstructure.ConditionalWithRequirements(new ConditionalCommand(
+            new ConditionalCommand(
+                driveToPose(getNearestReefFace()[0]), 
+                driveToPose(getNearestReefFace()[1]), 
+                () -> left),
+            new InstantCommand(),
+            shouldAlign),
+         this);
     }
 }
