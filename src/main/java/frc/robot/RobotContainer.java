@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -21,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.RobotState;
@@ -111,7 +114,7 @@ public class RobotContainer {
       .translationHeadingOffset(Rotation2d.fromDegrees(
           0));
 
-    public Trigger shouldAutoAlign = new Trigger(() -> m_operatorController.getThrottle() > 0);
+    public Trigger shouldAutoAlign = new Trigger(() -> m_operatorController.getThrottle() < 0);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -173,21 +176,17 @@ public class RobotContainer {
     // //Bind different commands to buttons depending on whether or not the robot holds a coral
     m_driverController.leftTrigger().onTrue(new ConditionalCommand(
         m_superstructure.groundAlgae(), 
-        m_superstructure.scoreLevel(ElevatorState.L4).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, true)),
+        m_superstructure.scoreLevel(ElevatorState.L4),
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.leftBumper().onTrue(new ConditionalCommand(
         m_superstructure.reefAlgae(), 
-        m_superstructure.scoreLevel(ElevatorState.L3).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, true)), 
-        () -> m_superstructure.getState() == RobotState.INTAKE)).onFalse(
-            new ConditionalCommand(
-                m_superstructure.stow(),
-                new InstantCommand(), 
-                () -> m_superstructure.getState() == RobotState.INTAKE));
+        m_superstructure.scoreLevel(ElevatorState.L3), 
+        () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.a().onTrue(new ConditionalCommand(
         m_superstructure.scoreNet(), 
-        m_superstructure.scoreLevel(ElevatorState.L2).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, true)), 
+        m_superstructure.scoreLevel(ElevatorState.L2), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.y().onTrue(new ConditionalCommand(
@@ -197,12 +196,12 @@ public class RobotContainer {
 
      m_driverController.rightTrigger().onTrue(new ConditionalCommand(
         m_superstructure.groundCoral().andThen(m_superstructure.goToHandoff()), 
-        m_superstructure.scoreLevel(ElevatorState.L4).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, false)), 
+        m_superstructure.scoreLevel(ElevatorState.L4), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.rightBumper().onTrue(new ConditionalCommand(
         m_superstructure.intakeL1(), 
-        m_superstructure.scoreLevel(ElevatorState.L3).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, false)), 
+        m_superstructure.scoreLevel(ElevatorState.L3), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.b().whileTrue(new ConditionalCommand(
@@ -212,7 +211,7 @@ public class RobotContainer {
     
     m_driverController.b().onTrue(new ConditionalCommand(
         new InstantCommand(),
-        m_superstructure.scoreLevel(ElevatorState.L2).alongWith(m_swerveSubsystem.autoAlign(shouldAutoAlign, false)),
+        m_superstructure.scoreLevel(ElevatorState.L2),
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.x().onTrue(new ConditionalCommand(
@@ -221,13 +220,17 @@ public class RobotContainer {
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_operatorController.button(1).onTrue(m_superstructure.cancelScoring());
-    m_operatorController.button(2).whileTrue(m_climberSubsystem.runOut(true).alongWith(m_cageSubsystem.run(),  m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.ALGAE), m_elevatorSubsystem.runManual(false).until(() -> m_elevatorSubsystem.getPosition() < 0.05)), m_pivotSubsystem.setPosition(IntakeState.INTAKE), m_superstructure.SwitchModes(RobotState.INTAKE)));
+    m_operatorController.button(2).whileTrue(m_climberSubsystem.runOut(true).alongWith(m_cageSubsystem.run(),  m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.ALGAE), m_elevatorSubsystem.runManual(false).until(() -> m_elevatorSubsystem.getPosition() < 0.05)), m_pivotSubsystem.setPosition(IntakeState.INTAKE), m_superstructure.switchModes(RobotState.INTAKE)));
     m_operatorController.button(3).whileTrue(m_elevatorSubsystem.runManual(true));
     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
     m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
     m_operatorController.button(6).onTrue(m_elevatorSubsystem.switchAlgae());
-    m_operatorController.button(7).onTrue(m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF));
-    m_operatorController.button(8).onTrue(m_elevatorSubsystem.setPosition(ElevatorState.STOW));
+    //m_operatorController.button(7).onTrue(m_superstructure.switchModes(RobotState.CORAL));
+    m_operatorController.button(7).onTrue(m_swerveSubsystem.autoAlign(shouldAutoAlign, false));
+    m_operatorController.button(9).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kForward));
+    m_operatorController.button(10).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kReverse));
+    m_operatorController.button(11).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kForward));
+    m_operatorController.button(12).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kReverse));
   }
 
    private void updateAutoChooser() {

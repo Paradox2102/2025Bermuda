@@ -28,6 +28,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -84,6 +85,8 @@ public class SwerveSubsystem extends SubsystemBase {
         {new Pose2d(12.452,2.91, Rotation2d.fromDegrees(150)), new Pose2d(12.173,3.105, Rotation2d.fromDegrees(150))}};
 
     private double m_fieldLength = 17.55;
+
+    private Field2d m_pose = new Field2d();
 
     /**
      * Initialize {@link SwerveDrive} with the directory provided.
@@ -162,6 +165,8 @@ public class SwerveSubsystem extends SubsystemBase {
             m_swerveDrive.updateOdometry();
             m_vision.updatePoseEstimation(m_swerveDrive);
         }
+        m_pose.setRobotPose(getPose());
+        SmartDashboard.putData("debug pose", m_pose);
     }
 
     @Override
@@ -276,7 +281,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param pose Target {@link Pose2d} to go to.
      * @return PathFinding command
      */
-    public Command driveToPose(Pose2d pose) {
+    public Command driveToPose(Supplier<Pose2d> pose) {
         // Create the constraints to use while pathfinding
         PathConstraints constraints = new PathConstraints(
                 m_swerveDrive.getMaximumChassisVelocity(), 4.0,
@@ -284,7 +289,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         return AutoBuilder.pathfindToPose(
-                pose,
+                pose.get(),
                 constraints,
                 edu.wpi.first.units.Units.MetersPerSecond.of(0) // Goal end velocity in meters/sec
         );
@@ -743,7 +748,7 @@ public class SwerveSubsystem extends SubsystemBase {
         return m_swerveDrive;
     }
 
-    public Pose2d[] getNearestReefFace() {
+    public Pose2d getNearestReefFace(boolean left) {
         Pose2d[] face = new Pose2d[2];
         double minDist = 100;
         for(int i = 0; i < m_reefPoses.length; i++){
@@ -759,14 +764,14 @@ public class SwerveSubsystem extends SubsystemBase {
                 face = m_reefPoses[i];
             }
         }
-        return face;
+        return left ? face[0] : face[1];
     }
 
     public ConditionalCommand autoAlign(Trigger shouldAlign, boolean left) {
-        return Superstructure.ConditionalWithRequirements(new ConditionalCommand(
+        return Superstructure.conditionalWithRequirements(new ConditionalCommand(
             new ConditionalCommand(
-                driveToPose(getNearestReefFace()[0]), 
-                driveToPose(getNearestReefFace()[1]), 
+                driveToPose(() -> getNearestReefFace(true)), 
+                driveToPose(() -> getNearestReefFace(false)), 
                 () -> left),
             new InstantCommand(),
             shouldAlign),

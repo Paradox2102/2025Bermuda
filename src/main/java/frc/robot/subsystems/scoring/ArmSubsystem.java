@@ -39,7 +39,7 @@ public class ArmSubsystem extends SubsystemBase {
     GROUND_ALGAE(-10),
     ALGAE(0),
     PROCESSOR(0),
-    NET(75),
+    NET(65),
     LOLLIPOP(-10);
 
     private double m_angle;

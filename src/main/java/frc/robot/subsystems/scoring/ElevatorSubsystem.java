@@ -4,6 +4,12 @@
 
 package frc.robot.subsystems.scoring;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.VoltsPerMeterPerSecond;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkSim;
@@ -16,6 +22,12 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -27,6 +39,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
@@ -34,7 +49,7 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
     STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.715, ArmState.HANDOFF, "Handoff"),
+    HANDOFF(0.72, ArmState.HANDOFF, "Handoff"),
     L1(0.45, ArmState.L1, "L1"),
     L2(0.4, ArmState.L2, "L2"),
     L3(0.775, ArmState.L3, "L3"),
@@ -43,7 +58,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     ALGAE_LOW(0.75, ArmState.ALGAE, "Algae Low"),
     ALGAE_HIGH(1.1, ArmState.ALGAE, "Algae High"),
     PROCESSOR(0, ArmState.PROCESSOR, "Processor"),
-    NET(1.5, ArmState.NET, "Net"),
+    NET(1.2, ArmState.NET, "Net"),
     LOLLIPOP(0, ArmState.LOLLIPOP, "Lollipop");
 
     private double m_height;
@@ -85,11 +100,16 @@ public class ElevatorSubsystem extends SubsystemBase {
   private ElevatorFeedforward m_feedforward = new ElevatorFeedforward(0, ElevatorConstants.k_g, ElevatorConstants.k_v, ElevatorConstants.k_a);
   private double m_output = 0;
 
+  private SysIdRoutine m_routine = new SysIdRoutine(new Config(),
+    new Mechanism(m_leadMotor::setVoltage, log -> {
+    log.motor("elev").voltage(Voltage.ofBaseUnits(m_leadMotor.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts)).linearPosition(Distance.ofBaseUnits(getPosition(), Meters)).linearVelocity(LinearVelocity.ofBaseUnits(getVelocity(), MetersPerSecond));
+  }, this));
+
   private double m_simHeight = 0;
   private double m_oldVel = 0;
 
   private RelativeEncoder m_encoder = m_leadMotor.getEncoder();
-  private DigitalInput m_limitSwitch = new DigitalInput(2);
+  private DigitalInput m_limitSwitch = new DigitalInput(0);
   private double m_setPoint = m_state.getHeight();
   
   public Trigger atPosition = new Trigger(
@@ -97,7 +117,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   //TODO: change to atBottom
   public Trigger atBottom = new Trigger(
-    () -> m_limitSwitch.get());
+    () -> !m_limitSwitch.get());
 
   /** Creates a new ElevatorSubsystem. */
   public ElevatorSubsystem() {
@@ -188,9 +208,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     }, this).until(atPosition);
   }
 
-  public Command goUp() {
+  public Command goUp(double height) {
     return Commands.runOnce(() -> {
-      m_setPoint = ElevatorState.HANDOFF.getHeight() + 0.15;
+      m_setPoint = ElevatorState.HANDOFF.getHeight() + height;
     }, this);
   }
 
@@ -206,13 +226,24 @@ public class ElevatorSubsystem extends SubsystemBase {
     return m_isHighAlgae;
   }
 
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return m_routine.quasistatic(direction);
+  }
+  
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return m_routine.dynamic(direction);
+  }
+
   @Override
   public void periodic() {
+    if(atBottom.getAsBoolean()){
+      m_encoder.setPosition(0);
+    }
     SmartDashboard.putNumber("accel", (getVelocity() - m_oldVel)/0.02);
     // This method will be called once per scheduler run
     m_pid.setGoal(getSetPoint());
     double pid = m_pid.calculate(getPosition());
-    double ff = m_feedforward.calculate(m_pid.getSetpoint().velocity); //* (12/RobotController.getBatteryVoltage());
+    double ff = m_feedforward.calculate(m_pid.getSetpoint().velocity);// * (12/RobotController.getBatteryVoltage());
     m_output = pid + ff;
     if(!m_manual){
       m_leadMotor.setVoltage(m_output);
@@ -226,6 +257,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("velocity", getVelocity());
     SmartDashboard.putBoolean("is high algae", m_isHighAlgae);
     SmartDashboard.putBoolean("switch", m_limitSwitch.get());
+    SmartDashboard.putNumber("elev current", m_leadMotor.getOutputCurrent());
     m_oldVel = getVelocity();
   }
 

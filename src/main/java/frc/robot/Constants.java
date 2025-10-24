@@ -72,17 +72,17 @@ public final class Constants
     public static final double k_deadzone = 0.25;
     public static final double k_rotationsToMeters = 0.023350521;
 
-    public static final double k_p = 0.0125;
+    public static final double k_p = 0;//.005;
     public static final double k_i = 0;
     // public static final double k_izone = 0.1;
     public static final double k_d = 0;
 
     //found by reca.lc linear mechanism model
-    public static final double k_g = 0.375;
-    public static final double k_v = 3.37;//4.69;
-    public static final double k_a = 0;//0.05;
+    public static final double k_g = 0.38;
+    public static final double k_v = 3.75;
+    public static final double k_a = 0;
     public static final double k_maxAccel = 25;
-    public static final double k_maxVel = 2;
+    public static final double k_maxVel = 2.5;
 
     public static final double k_dunkHeight = 0.25;
 
@@ -91,7 +91,7 @@ public final class Constants
     static {
       elevatorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(60);
       elevatorConfig.inverted(false);
-      elevatorConfig.encoder.positionConversionFactor(k_rotationsToMeters).velocityConversionFactor(k_rotationsToMeters);
+      elevatorConfig.encoder.positionConversionFactor(k_rotationsToMeters).velocityConversionFactor(k_rotationsToMeters / 60.0);
       followConfig.apply(elevatorConfig).follow(CANIDConstants.elev_leader, true);
     }
   }
@@ -167,7 +167,7 @@ public final class Constants
     public static final double k_slowSpeed = 0;
 
     public static final double k_inSpeed = 3000;
-    public static final double k_outSpeed = -6000;
+    public static final double k_outSpeed = -3000;
     public static final double k_stallSpeed = 1000;
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
@@ -183,22 +183,21 @@ public final class Constants
 
   public static class ClawConstants {
     public static final double k_f = 0.00015;
-    public static final double k_p = 0.00005;
-    public static final double k_i = 0.000001;
-    public static final double k_d = 0;
+    public static final double k_p = 0.0001;
 
-    public static final double k_stallCurrent = 50;
+    public static final double k_stallCurrent = 40;
     public static final double k_slowSpeed = 300;
 
-    public static final double k_inSpeed = 6000;
-    public static final double k_outSpeed = -1500;
+    public static final double k_inSpeed = 4000;
+    public static final double k_outSpeed = -1000;
+    public static final double k_stallSpeed = -500;
 
     public static final SparkFlexConfig clawConfig = new SparkFlexConfig();
     static {
       clawConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(70);
       clawConfig.inverted(true);
       clawConfig.closedLoop
-            .pid(k_p, k_i, k_d)
+            .p(k_p)
             .velocityFF(k_f)
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     }

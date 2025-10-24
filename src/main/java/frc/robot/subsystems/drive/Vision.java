@@ -305,35 +305,35 @@ public class Vision {
      * Left Camera
      */
     LEFT_FRONT("fl",
-        new Rotation3d(0, Math.toRadians(45), Math.toRadians(45)),
-        new Translation3d(Units.inchesToMeters(-3.037),
-            Units.inchesToMeters(7.841),
-            Units.inchesToMeters(29.806)),
+        new Rotation3d(0, Math.toRadians(45), Math.toRadians(30)),
+        new Translation3d(Units.inchesToMeters(-3.943),
+            Units.inchesToMeters(7.9),
+            Units.inchesToMeters(27.655)),
         VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
     /**
      * Right Camera
      */
     LEFT_BACK("bl",
         new Rotation3d(0, Math.toRadians(45), Math.toRadians(120)),
-        new Translation3d(Units.inchesToMeters(-5.574),
-            Units.inchesToMeters(8.173),
-            Units.inchesToMeters(29.81)),
+        new Translation3d(Units.inchesToMeters(-5.053),
+            Units.inchesToMeters(7.908),
+            Units.inchesToMeters(30.16)),
         VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
     /**
      * Center Camera
      */
     RIGHT_FRONT("fr",
-        new Rotation3d(0, Units.degreesToRadians(45), Units.degreesToRadians(315)),
-        new Translation3d(Units.inchesToMeters(-3.037),
-            Units.inchesToMeters(-7.841),
-            Units.inchesToMeters(29.806)),
+        new Rotation3d(0, Units.degreesToRadians(45), Units.degreesToRadians(300)),
+        new Translation3d(Units.inchesToMeters(-3.943),
+            Units.inchesToMeters(-7.9),
+            Units.inchesToMeters(27.655)),
         VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
 
     RIGHT_BACK("br", 
         new Rotation3d(0, Units.degreesToRadians(45),Units.degreesToRadians(240)), 
-        new Translation3d(Units.inchesToMeters(-5.574),
-          Units.inchesToMeters(-8.173),
-          Units.inchesToMeters(29.81)), 
+        new Translation3d(Units.inchesToMeters(-5.053),
+          Units.inchesToMeters(-7.908),
+          Units.inchesToMeters(30.16)), 
         VecBuilder.fill(4,4,8), VecBuilder.fill(0.5,0.5,1));
 
     /**

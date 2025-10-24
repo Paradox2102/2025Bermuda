@@ -105,7 +105,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_output = m_pid.calculate(getAngle(), m_state.getAngle()) + IntakePivotConstants.k_f * Math.cos(Math.toRadians(getAngle()));
-    m_pivotMotor.setVoltage(m_output);
+    //m_pivotMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Intake Angle", getAngle());
     SmartDashboard.putString("intake state",m_state.toString());
     SmartDashboard.putNumber("Intake output", m_output);
