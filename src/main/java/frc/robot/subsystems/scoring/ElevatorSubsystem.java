@@ -210,7 +210,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public Command goUp(double height) {
     return Commands.runOnce(() -> {
-      m_setPoint = ElevatorState.HANDOFF.getHeight() + height;
+      m_setPoint = getPosition() + height;
     }, this);
   }
 

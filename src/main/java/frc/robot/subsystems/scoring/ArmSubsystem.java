@@ -39,7 +39,7 @@ public class ArmSubsystem extends SubsystemBase {
     GROUND_ALGAE(-10),
     ALGAE(0),
     PROCESSOR(0),
-    NET(65),
+    NET(60),
     LOLLIPOP(-10);
 
     private double m_angle;
@@ -128,7 +128,7 @@ public class ArmSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_output = m_pid.calculate(getAngle(), getSetPoint()) + ArmConstants.k_f * Math.cos(Math.toRadians(getSetPoint()));
+    m_output = m_pid.calculate(getAngle(), getSetPoint()) + ArmConstants.k_f * Math.cos(Math.toRadians(getAngle()));
     m_armMotor.setVoltage(m_output);
     SmartDashboard.putNumber("Arm Angle", getAngle());
     SmartDashboard.putNumber("Arm voltage", m_output);

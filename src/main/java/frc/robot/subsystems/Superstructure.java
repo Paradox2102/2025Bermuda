@@ -163,7 +163,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public ConditionalCommand scoreNet() {
-    return conditionalWithRequirements(new ConditionalCommand(m_elevatorSubsystem.goUp(0.3).alongWith(m_armSubsystem.switchSides(false), new WaitCommand(0.25).andThen(m_clawSubsystem.eject())).andThen(setScoring(ElevatorState.STOW)), m_armSubsystem.switchSides(true).andThen(goToLevel(ElevatorState.NET), setScoring(ElevatorState.NET)), () -> m_scoringLevel == ElevatorState.NET), this);
+    return conditionalWithRequirements(new ConditionalCommand(m_elevatorSubsystem.goUp(0.5).alongWith(m_armSubsystem.switchSides(false), new WaitCommand(0.25).andThen(m_clawSubsystem.eject(), m_clawSubsystem.setGamePiece(false))).andThen(setScoring(ElevatorState.STOW)), m_armSubsystem.switchSides(true).andThen(goToLevel(ElevatorState.NET), setScoring(ElevatorState.NET)), () -> m_scoringLevel == ElevatorState.NET), this);
   }
 
   public ConditionalCommand scoreProcessor() {

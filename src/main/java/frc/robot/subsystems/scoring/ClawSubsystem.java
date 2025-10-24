@@ -29,7 +29,7 @@ public class ClawSubsystem extends SubsystemBase {
 
   public final Trigger pickCoralAlgae = new Trigger(
       () -> Math.abs(getCurrentDraw()) > ClawConstants.k_stallCurrent && getSpeed() < (ClawConstants.k_inSpeed - ClawConstants.k_slowSpeed))
-      .debounce(0.1, DebounceType.kRising);
+      .debounce(0.25, DebounceType.kRising);
   private boolean m_hasGamePiece = false;
 
   /** Creates a new RollerSubsystem. */
@@ -69,7 +69,7 @@ public class ClawSubsystem extends SubsystemBase {
 
   public Command eject() {
     return Commands.run(() -> {
-      m_pid.setReference(ClawConstants.k_outSpeed, ControlType.kVelocity);
+      m_clawMotor.setVoltage(-6);;
     },this);
   }
 
@@ -86,7 +86,11 @@ public class ClawSubsystem extends SubsystemBase {
   public Command hold() {
     return Commands.runOnce(
       () -> {
-        m_pid.setReference(ClawConstants.k_stallSpeed, ControlType.kVelocity);
+        if(isAlgae()){
+          m_clawMotor.setVoltage(10);
+        } else {
+          m_clawMotor.setVoltage(0);
+        }
       }, this);
   }
 

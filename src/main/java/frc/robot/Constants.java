@@ -44,7 +44,7 @@ public final class Constants
   }
 
   public static final class IntakePivotConstants {
-    public static final double k_resetPosition = 20.1/360;
+    public static final double k_resetPosition = 0.7141;
     public static final double k_deadzone = 2;
 
     public static final double k_gearRatio = 11.67;
@@ -188,9 +188,9 @@ public final class Constants
     public static final double k_stallCurrent = 40;
     public static final double k_slowSpeed = 300;
 
-    public static final double k_inSpeed = 4000;
+    public static final double k_inSpeed = 6000;
     public static final double k_outSpeed = -1000;
-    public static final double k_stallSpeed = -500;
+    public static final double k_stallSpeed = 500;
 
     public static final SparkFlexConfig clawConfig = new SparkFlexConfig();
     static {
