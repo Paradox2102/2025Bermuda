@@ -35,9 +35,9 @@ public class ArmSubsystem extends SubsystemBase {
     L1(-8.5),
     L2(35),
     L3(37.5),
-    L4(37.5),
+    L4(40),
     GROUND_ALGAE(-10),
-    ALGAE(0),
+    ALGAE(5),
     PROCESSOR(0),
     NET(60),
     LOLLIPOP(-10);

@@ -28,7 +28,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
 
   public final Trigger pickCoral = new Trigger(
       () -> getCurrentDraw() > IntakeRollerConstants.k_stallCurrent)
-      .debounce(.5, DebounceType.kRising);
+      .debounce(.75, DebounceType.kRising);
   private boolean m_hasCoral = false;
 
   /** Creates a new RollerSubsystem. */

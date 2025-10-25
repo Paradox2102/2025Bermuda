@@ -55,10 +55,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     L3(0.775, ArmState.L3, "L3"),
     L4(1.4, ArmState.L4, "L4"),
     GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
-    ALGAE_LOW(0.75, ArmState.ALGAE, "Algae Low"),
-    ALGAE_HIGH(1.1, ArmState.ALGAE, "Algae High"),
+    ALGAE_LOW(0.7, ArmState.ALGAE, "Algae Low"),
+    ALGAE_HIGH(1, ArmState.ALGAE, "Algae High"),
     PROCESSOR(0, ArmState.PROCESSOR, "Processor"),
-    NET(1.2, ArmState.NET, "Net"),
+    NET(1.3, ArmState.NET, "Net"),
     LOLLIPOP(0, ArmState.LOLLIPOP, "Lollipop");
 
     private double m_height;
@@ -174,7 +174,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public Command scoreCoral() {
     return Commands.runOnce(() -> {
-      m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
+      m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2.5*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
       System.out.println("Elevator Score");
     }, this);
   }

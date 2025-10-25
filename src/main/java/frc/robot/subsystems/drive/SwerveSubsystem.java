@@ -17,6 +17,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.Constants.DrivebaseConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Vision.Cameras;
 
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
@@ -84,7 +88,12 @@ public class SwerveSubsystem extends SubsystemBase {
         {new Pose2d(13.449,2.809, Rotation2d.fromDegrees(210)), new Pose2d(13.708,2.958, Rotation2d.fromDegrees(210))},
         {new Pose2d(12.452,2.91, Rotation2d.fromDegrees(150)), new Pose2d(12.173,3.105, Rotation2d.fromDegrees(150))}};
 
+    Supplier<Pose2d[]> m_alignPose = () -> getNearestReefFace();
+
     private double m_fieldLength = 17.55;
+
+    private PIDController m_xPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
+    private PIDController m_yPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
 
     private Field2d m_pose = new Field2d();
 
@@ -165,8 +174,11 @@ public class SwerveSubsystem extends SubsystemBase {
             m_swerveDrive.updateOdometry();
             m_vision.updatePoseEstimation(m_swerveDrive);
         }
-        m_pose.setRobotPose(getPose());
+        m_pose.setRobotPose(getNearestReefFace()[0]);
+        m_alignPose = () -> getNearestReefFace();
         SmartDashboard.putData("debug pose", m_pose);
+        SmartDashboard.putNumber("left align error", getNearestReefFace()[0].getTranslation().getDistance(getPose().getTranslation()));
+        SmartDashboard.putNumber("right align error", getNearestReefFace()[1].getTranslation().getDistance(getPose().getTranslation()));
     }
 
     @Override
@@ -281,7 +293,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param pose Target {@link Pose2d} to go to.
      * @return PathFinding command
      */
-    public Command driveToPose(Supplier<Pose2d> pose) {
+    public Command driveToPose(Pose2d pose) {
         // Create the constraints to use while pathfinding
         PathConstraints constraints = new PathConstraints(
                 m_swerveDrive.getMaximumChassisVelocity(), 4.0,
@@ -289,10 +301,18 @@ public class SwerveSubsystem extends SubsystemBase {
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         return AutoBuilder.pathfindToPose(
-                pose.get(),
+                pose,
                 constraints,
                 edu.wpi.first.units.Units.MetersPerSecond.of(0) // Goal end velocity in meters/sec
         );
+    }
+
+    public Command PIDAlign(Pose2d pose){
+        return Commands.run(() -> {
+            double x = -m_xPID.calculate(getPose().getX(), pose.getX());
+            double y = m_yPID.calculate(getPose().getY(), pose.getY());
+            drive(new ChassisSpeeds(x, y, 0));
+        }, this).until(() -> Math.abs(pose.getTranslation().getDistance(getPose().getTranslation())) < DrivebaseConstants.k_alignTolerance);
     }
 
     /**
@@ -748,7 +768,7 @@ public class SwerveSubsystem extends SubsystemBase {
         return m_swerveDrive;
     }
 
-    public Pose2d getNearestReefFace(boolean left) {
+    public Pose2d[] getNearestReefFace() {
         Pose2d[] face = new Pose2d[2];
         double minDist = 100;
         for(int i = 0; i < m_reefPoses.length; i++){
@@ -764,15 +784,12 @@ public class SwerveSubsystem extends SubsystemBase {
                 face = m_reefPoses[i];
             }
         }
-        return left ? face[0] : face[1];
+        return face;
     }
 
     public ConditionalCommand autoAlign(Trigger shouldAlign, boolean left) {
         return Superstructure.conditionalWithRequirements(new ConditionalCommand(
-            new ConditionalCommand(
-                driveToPose(() -> getNearestReefFace(true)), 
-                driveToPose(() -> getNearestReefFace(false)), 
-                () -> left),
+            left ? driveToPose(m_alignPose.get()[0]).andThen(PIDAlign(m_alignPose.get()[0])) : driveToPose(m_alignPose.get()[1]).andThen(PIDAlign(m_alignPose.get()[1])),
             new InstantCommand(),
             shouldAlign),
          this);

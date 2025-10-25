@@ -123,7 +123,7 @@ public class Superstructure extends SubsystemBase {
           .andThen(
             runForTime(
               m_elevatorSubsystem.scoreCoral(),
-               0.33))),
+               0.75))),
       switchModes(RobotState.INTAKE),
       setScoring(ElevatorState.STOW), 
       m_armSubsystem.setPosition(ArmState.STOW), 
@@ -163,7 +163,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public ConditionalCommand scoreNet() {
-    return conditionalWithRequirements(new ConditionalCommand(m_elevatorSubsystem.goUp(0.5).alongWith(m_armSubsystem.switchSides(false), new WaitCommand(0.25).andThen(m_clawSubsystem.eject(), m_clawSubsystem.setGamePiece(false))).andThen(setScoring(ElevatorState.STOW)), m_armSubsystem.switchSides(true).andThen(goToLevel(ElevatorState.NET), setScoring(ElevatorState.NET)), () -> m_scoringLevel == ElevatorState.NET), this);
+    return conditionalWithRequirements(new ConditionalCommand(m_elevatorSubsystem.goUp(0.5).alongWith(m_armSubsystem.switchSides(false), new WaitCommand(0.125).andThen(m_clawSubsystem.eject(), m_clawSubsystem.setGamePiece(false))).andThen(setScoring(ElevatorState.STOW)), m_armSubsystem.switchSides(true).andThen(goToLevel(ElevatorState.NET), setScoring(ElevatorState.NET)), () -> m_scoringLevel == ElevatorState.NET), this);
   }
 
   public ConditionalCommand scoreProcessor() {
@@ -183,7 +183,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public SequentialCommandGroup cancelScoring() {
-    return sequentialWithRequirements(new SequentialCommandGroup(setScoring(ElevatorState.STOW), toggleClimbing(false), switchModes(RobotState.INTAKE), m_armSubsystem.setPosition(ArmState.STOW), stow()), this);
+    return sequentialWithRequirements(new SequentialCommandGroup(setScoring(ElevatorState.STOW),m_clawSubsystem.setGamePiece(false), toggleClimbing(false), switchModes(RobotState.INTAKE), m_armSubsystem.setPosition(ArmState.STOW).deadlineFor(m_rollerSubsystem.eject()), stow()), this);
   }
 
   public Command switchModes(RobotState state) {

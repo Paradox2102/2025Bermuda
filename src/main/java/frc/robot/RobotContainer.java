@@ -225,12 +225,12 @@ public class RobotContainer {
     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
     m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
     m_operatorController.button(6).onTrue(m_elevatorSubsystem.switchAlgae());
-    //m_operatorController.button(7).onTrue(m_superstructure.switchModes(RobotState.CORAL));
-    m_operatorController.button(7).onTrue(m_swerveSubsystem.autoAlign(shouldAutoAlign, false));
-    m_operatorController.button(9).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kForward));
-    m_operatorController.button(10).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kReverse));
-    m_operatorController.button(11).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kForward));
-    m_operatorController.button(12).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kReverse));
+    m_operatorController.button(7).onTrue(m_superstructure.switchModes(RobotState.CORAL));
+    //m_operatorController.button(7).onTrue(m_clawSubsystem.intake());
+    // m_operatorController.button(9).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kForward));
+    // m_operatorController.button(10).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kReverse));
+    // m_operatorController.button(11).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kForward));
+    // m_operatorController.button(12).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kReverse));
   }
 
    private void updateAutoChooser() {
