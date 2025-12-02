@@ -175,12 +175,12 @@ public class RobotContainer {
     //m_superstructure.setDefaultCommand(m_superstructure.stow());
     // //Bind different commands to buttons depending on whether or not the robot holds a coral
     m_driverController.leftTrigger().onTrue(new ConditionalCommand(
-        m_superstructure.groundAlgae(), 
+        m_superstructure.reefAlgae(true), 
         m_superstructure.scoreLevel(ElevatorState.L4),
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
     m_driverController.leftBumper().onTrue(new ConditionalCommand(
-        m_superstructure.reefAlgae(), 
+        m_superstructure.reefAlgae(false), 
         m_superstructure.scoreLevel(ElevatorState.L3), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
@@ -194,7 +194,7 @@ public class RobotContainer {
         m_superstructure.clawL1(), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-     m_driverController.rightTrigger().onTrue(new ConditionalCommand(
+     m_driverController.rightTrigger().whileTrue(new ConditionalCommand(
         m_superstructure.groundCoral().andThen(m_superstructure.goToHandoff()), 
         m_superstructure.scoreLevel(ElevatorState.L4), 
         () -> m_superstructure.getState() == RobotState.INTAKE));
@@ -224,13 +224,7 @@ public class RobotContainer {
     m_operatorController.button(3).whileTrue(m_elevatorSubsystem.runManual(true));
     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
     m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
-    m_operatorController.button(6).onTrue(m_elevatorSubsystem.switchAlgae());
     m_operatorController.button(7).onTrue(m_superstructure.switchModes(RobotState.CORAL));
-    //m_operatorController.button(7).onTrue(m_clawSubsystem.intake());
-    // m_operatorController.button(9).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kForward));
-    // m_operatorController.button(10).whileTrue(m_elevatorSubsystem.sysIdQuasistatic(Direction.kReverse));
-    // m_operatorController.button(11).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kForward));
-    // m_operatorController.button(12).whileTrue(m_elevatorSubsystem.sysIdDynamic(Direction.kReverse));
   }
 
    private void updateAutoChooser() {
@@ -244,7 +238,10 @@ public class RobotContainer {
   private void addNamedCommands() {
     NamedCommands.registerCommand("L4", m_superstructure.goToLevel(ElevatorState.L4));
     NamedCommands.registerCommand("Score", m_superstructure.scoreCoralResetElev());
-    NamedCommands.registerCommand("Algae", m_superstructure.reefAlgae());
+    NamedCommands.registerCommand("High Reef Algae", m_superstructure.reefAlgae(true));
+    NamedCommands.registerCommand("Low Reef Algae", m_superstructure.reefAlgae(false));
+    NamedCommands.registerCommand("Net Sequence", m_superstructure.scoreNet());
+    NamedCommands.registerCommand("Reset", m_superstructure.cancelScoring());
   }
 
   /**

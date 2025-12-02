@@ -19,7 +19,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 1.0
           }
         },
         {
@@ -29,21 +29,40 @@
           }
         },
         {
-          "type": "wait",
+          "type": "parallel",
           "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "back off"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "l4 to algae grab"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Reef Algae"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Reset"
+            "name": "Net Sequence"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "algae grab to score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Net Sequence"
           }
         }
       ]

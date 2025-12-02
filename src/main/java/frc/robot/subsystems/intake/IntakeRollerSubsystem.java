@@ -25,10 +25,11 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   private SparkFlex m_rollerMotor = new SparkFlex(CANIDConstants.intake_roller, MotorType.kBrushless);
   private RelativeEncoder m_encoder = m_rollerMotor.getEncoder();
   private SparkClosedLoopController m_pid = m_rollerMotor.getClosedLoopController();
-
+  
   public final Trigger pickCoral = new Trigger(
-      () -> getCurrentDraw() > IntakeRollerConstants.k_stallCurrent)
-      .debounce(.75, DebounceType.kRising);
+      () -> getCurrentDraw() > IntakeRollerConstants.k_stallCurrent &&
+      getSpeed() < IntakeRollerConstants.k_inSpeed - IntakeRollerConstants.k_slowSpeed)
+      .debounce(0.75, DebounceType.kRising);
   private boolean m_hasCoral = false;
 
   /** Creates a new RollerSubsystem. */
@@ -62,7 +63,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
       run(true);
     }, () -> {
       stop();
-    }, this).until(pickCoral);
+    }, this);
   }
 
   public Command eject() {

@@ -49,17 +49,18 @@ public final class Constants
   }
 
   public static final class IntakePivotConstants {
-    public static final double k_resetPosition = 0.7141;
-    public static final double k_deadzone = 2;
+    public static final double k_resetPosition = 0.3892;
+    public static final double k_deadzone = 10;
 
     public static final double k_gearRatio = 11.67;
     public static final double k_momentOfInertia = 0.485;
     public static final double k_armLengthMeters = 0.5;
 
-    public static final double k_f = 0.5;
+    public static final double k_f = 0.15;
     public static final double k_p = 0.035;
-    public static final double k_i = 0.075;
-    public static final double k_izone = 15;
+    public static final double k_i = 0;
+    public static final double k_d = 0;
+    public static final double k_izone = 5;
 
     public static final SparkFlexConfig pivotConfig = new SparkFlexConfig();
     static {
@@ -89,8 +90,6 @@ public final class Constants
     public static final double k_maxAccel = 25;
     public static final double k_maxVel = 2.5;
 
-    public static final double k_dunkHeight = 0.25;
-
     public static final SparkFlexConfig elevatorConfig = new SparkFlexConfig();
     public static final SparkFlexConfig followConfig = new SparkFlexConfig();
     static {
@@ -102,8 +101,8 @@ public final class Constants
   }
 
   public static class ArmConstants {
-    public static final double k_deadzone = 5;
-    public static final double k_resetPosition = 0.1179;
+    public static final double k_deadzone = 2;
+    public static final double k_resetPosition = 0.8458;
 
     public static final double k_gearRatio = 27;
     public static final double k_momentOfInertia = 0.308;
@@ -115,11 +114,11 @@ public final class Constants
     public static final double k_d = 0.01;//0.001;
     public static final double k_f = 0.5;
 
-    public static final double k_dunkAngle = 50;
+    public static final double k_dunkAngle = 60;
 
     public static final SparkFlexConfig armConfig = new SparkFlexConfig();
     static {
-        armConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(60);
+        armConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(70);
         armConfig.inverted(false);
         armConfig.absoluteEncoder
               .zeroOffset(k_resetPosition)
@@ -148,9 +147,9 @@ public final class Constants
 
   public static class CageCatcherConstants {
     public static final double k_p = 0.00025;
-    public static final double k_i = 0.0000005;
+    public static final double k_i = 0.00000025;
 
-    public static final double k_inSpeed = 3000;
+    public static final double k_inSpeed = 2000;
 
     public static final SparkFlexConfig cageConfig = new SparkFlexConfig();
     static {
@@ -164,15 +163,15 @@ public final class Constants
 
   public static class IntakeRollerConstants {
     public static final double k_f = 0.00027;
-    public static final double k_p = 0.000075;
+    public static final double k_p = 0.00025;
     public static final double k_i = 0;
     public static final double k_d = 0;
 
-    public static final double k_stallCurrent = 75;
-    public static final double k_slowSpeed = 0;
+    public static final double k_stallCurrent = 90;
+    public static final double k_slowSpeed = 2990;
 
-    public static final double k_inSpeed = 2000;
-    public static final double k_outSpeed = -3000;
+    public static final double k_inSpeed = 3000;
+    public static final double k_outSpeed = -5000;
     public static final double k_stallSpeed = 1000;
 
     public static final SparkFlexConfig rollerConfig = new SparkFlexConfig();
@@ -194,7 +193,7 @@ public final class Constants
     public static final double k_slowSpeed = 300;
 
     public static final double k_inSpeed = 6000;
-    public static final double k_outSpeed = -1000;
+    public static final double k_outSpeed = -6000;
     public static final double k_stallSpeed = 500;
 
     public static final SparkFlexConfig clawConfig = new SparkFlexConfig();

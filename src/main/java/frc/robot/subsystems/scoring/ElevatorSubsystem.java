@@ -48,27 +48,29 @@ import frc.robot.subsystems.scoring.ArmSubsystem.ArmState;
 
 public class ElevatorSubsystem extends SubsystemBase {
   public enum ElevatorState {
-    STOW(0, ArmState.STOW, "Stow"),
-    HANDOFF(0.72, ArmState.HANDOFF, "Handoff"),
-    L1(0.45, ArmState.L1, "L1"),
-    L2(0.4, ArmState.L2, "L2"),
-    L3(0.775, ArmState.L3, "L3"),
-    L4(1.4, ArmState.L4, "L4"),
-    GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground"),
-    ALGAE_LOW(0.7, ArmState.ALGAE, "Algae Low"),
-    ALGAE_HIGH(1, ArmState.ALGAE, "Algae High"),
-    PROCESSOR(0, ArmState.PROCESSOR, "Processor"),
-    NET(1.3, ArmState.NET, "Net"),
-    LOLLIPOP(0, ArmState.LOLLIPOP, "Lollipop");
+    STOW(0, ArmState.STOW, "Stow", 0),
+    HANDOFF(0.735, ArmState.HANDOFF, "Handoff", 0),
+    L1(0.375, ArmState.L1, "L1", 0),
+    L2(0.42, ArmState.L2, "L2", 0.075),
+    L3(0.83, ArmState.L3, "L3", 0.2),
+    L4(1.35, ArmState.L4, "L4", 0.35),
+    GROUND_ALGAE(0, ArmState.GROUND_ALGAE, "Algae Ground", 0),
+    ALGAE_LOW(0.612, ArmState.ALGAE, "Algae Low", 0),
+    ALGAE_HIGH(1.05, ArmState.ALGAE, "Algae High", 0),
+    PROCESSOR(0, ArmState.PROCESSOR, "Processor", 0),
+    NET(1.3, ArmState.NET, "Net", 0),
+    LOLLIPOP(0, ArmState.LOLLIPOP, "Lollipop", 0);
 
     private double m_height;
     private ArmState m_armPos;
     private String m_name;
+    private double m_lowerAmount;
     
-    ElevatorState(double height, ArmState armPos, String name) {
+    ElevatorState(double height, ArmState armPos, String name, double lowerAmount) {
       m_height = height;
       m_armPos = armPos;
       m_name = name;
+      m_lowerAmount = lowerAmount;
     }
 
     public double getHeight() {
@@ -82,6 +84,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     public String getName() {
       return m_name;
     }
+
+    public double getLowerAmount(){
+      return m_lowerAmount;
+    }
   }
 
   private SparkFlex m_leadMotor = new SparkFlex(Constants.CANIDConstants.elev_leader, MotorType.kBrushless);
@@ -90,8 +96,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private ElevatorState m_state = ElevatorState.STOW;
   private boolean m_manual = false;
-
-  private boolean m_isHighAlgae = true;
 
   //kv and ka calculated from reca.lc
   //private ElevatorSim m_elevatorSim = new ElevatorSim(ElevatorConstants.k_v, ElevatorConstants.k_a, DCMotor.getNeoVortex(2), 0, 1.42, true, m_state.getHeight());
@@ -174,7 +178,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public Command scoreCoral() {
     return Commands.runOnce(() -> {
-      m_setPoint = m_state.getHeight() - (m_state == ElevatorState.L4 ? 2.5*ElevatorConstants.k_dunkHeight : ElevatorConstants.k_dunkHeight);
+      m_setPoint = m_state.getHeight() - m_state.getLowerAmount();
       System.out.println("Elevator Score");
     }, this);
   }
@@ -189,20 +193,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     }, this);
   }
 
-  public Command switchAlgae() {
-    return Commands.runOnce(() -> {
-      if(m_isHighAlgae){
-        m_isHighAlgae = false;
-      } else {
-        m_isHighAlgae = true;
-      }
-    });
-  }
-
-  public Command deployAlgae() {
+  public Command deployAlgae(boolean algae) {
     return Commands.run(() -> {
       m_manual = false;
-      m_state = m_isHighAlgae ? ElevatorState.ALGAE_HIGH : ElevatorState.ALGAE_LOW;
+      m_state = algae ? ElevatorState.ALGAE_HIGH : ElevatorState.ALGAE_LOW;
       m_pid.reset(getPosition(),getVelocity());
       m_setPoint = m_state.getHeight();
     }, this).until(atPosition);
@@ -220,10 +214,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public double getSetPoint() {
     return m_setPoint;
-  }
-
-  public boolean getAlgaeLevel() {
-    return m_isHighAlgae;
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -255,7 +245,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     SmartDashboard.putString("level", m_state.getName());
     SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
     SmartDashboard.putNumber("velocity", getVelocity());
-    SmartDashboard.putBoolean("is high algae", m_isHighAlgae);
     SmartDashboard.putBoolean("switch", m_limitSwitch.get());
     SmartDashboard.putNumber("elev current", m_leadMotor.getOutputCurrent());
     m_oldVel = getVelocity();

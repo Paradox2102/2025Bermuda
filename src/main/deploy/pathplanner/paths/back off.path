@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.18,
+        "x": 5.8,
         "y": 4.135
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.812098528158646,
+        "x": 6.142889000518104,
         "y": 4.135
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "branch 12"
     },
     {
       "anchor": {
-        "x": 5.8,
+        "x": 6.351903409090909,
         "y": 4.135
       },
       "prevControl": {
-        "x": 6.4073086545914215,
+        "x": 5.972851772109625,
         "y": 4.135
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "branch 12"
+      "linkedName": "back algae"
     }
   ],
   "rotationTargets": [],
@@ -35,7 +35,7 @@
       "minWaypointRelativePos": 0,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 4.92,
+        "maxVelocity": 1.0,
         "maxAcceleration": 2.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 1625.0,

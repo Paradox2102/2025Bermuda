@@ -69,8 +69,16 @@ public class ClawSubsystem extends SubsystemBase {
 
   public Command eject() {
     return Commands.run(() -> {
-      m_clawMotor.setVoltage(-6);;
+      m_clawMotor.setVoltage(-3);;
     },this);
+  }
+
+  public Command deAlgae() {
+    return Commands.runEnd(() -> {
+      run(false);
+    }, () -> {
+      stop();
+    }, this);
   }
 
   public Command setGamePiece(boolean algae){
@@ -87,7 +95,7 @@ public class ClawSubsystem extends SubsystemBase {
     return Commands.runOnce(
       () -> {
         if(isAlgae()){
-          m_clawMotor.setVoltage(1.5);
+          m_clawMotor.setVoltage(0);
         } else {
           m_clawMotor.setVoltage(0);
         }

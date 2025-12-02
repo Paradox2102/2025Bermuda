@@ -32,7 +32,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
     STOW(75),
     HANDOFF(115),
     INTAKE(0),
-    L1(86.5);
+    L1(79);
 
     private double m_angle;
     
@@ -81,7 +81,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
 
   public Command runDown() {
     return Commands.run(() -> {
-      m_pivotMotor.setVoltage(-3);
+      m_pivotMotor.setVoltage(3);
     });
   }
 

@@ -99,7 +99,7 @@ public class Superstructure extends SubsystemBase {
           m_elevatorSubsystem.setPosition(state))), this);
   }
 
-  public SequentialCommandGroup goToAlgae() {
+  public SequentialCommandGroup goToAlgae(boolean high) {
     return sequentialWithRequirements(
       new SequentialCommandGroup(
         m_pivotSubsystem.setPosition(IntakeState.STOW)
@@ -110,7 +110,7 @@ public class Superstructure extends SubsystemBase {
         setScoring(ElevatorState.STOW),
         m_armSubsystem.setPosition(ArmState.ALGAE)
         .alongWith(
-          m_elevatorSubsystem.deployAlgae())), this);
+          m_elevatorSubsystem.deployAlgae(high))), this);
   }
 
   public SequentialCommandGroup scoreCoralResetElev() {
@@ -127,7 +127,7 @@ public class Superstructure extends SubsystemBase {
       switchModes(RobotState.INTAKE),
       setScoring(ElevatorState.STOW), 
       m_armSubsystem.setPosition(ArmState.STOW), 
-      m_elevatorSubsystem.setPosition(ElevatorState.STOW)), this);
+      m_elevatorSubsystem.setPosition(ElevatorState.HANDOFF)), this);
   }
 
   public ConditionalCommand scoreLevel(ElevatorState level) {
@@ -135,7 +135,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public ConditionalCommand clawL1() {
-    return conditionalWithRequirements(new ConditionalCommand(m_clawSubsystem.eject().andThen(switchModes(RobotState.INTAKE).andThen(setScoring(ElevatorState.STOW))), goToLevel(ElevatorState.L1).andThen(setScoring(ElevatorState.L1)), () -> m_scoringLevel == ElevatorState.L1), this);
+    return conditionalWithRequirements(new ConditionalCommand(runForTime(m_clawSubsystem.eject(), 0.5).andThen(switchModes(RobotState.INTAKE).andThen(setScoring(ElevatorState.STOW))), goToLevel(ElevatorState.L1).andThen(setScoring(ElevatorState.L1)), () -> m_scoringLevel == ElevatorState.L1), this);
   }
 
   public ParallelDeadlineGroup groundCoral() {
@@ -143,7 +143,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public ConditionalCommand intakeL1() {
-    return conditionalWithRequirements(new ConditionalCommand(m_rollerSubsystem.eject().andThen(setScoring(ElevatorState.STOW)), m_pivotSubsystem.setPosition(IntakeState.L1).andThen(setScoring(ElevatorState.L1)), () -> m_scoringLevel == ElevatorState.L1), this);
+    return conditionalWithRequirements(new ConditionalCommand(runForTime(m_rollerSubsystem.eject(), 0.5).andThen(setScoring(ElevatorState.STOW)), m_pivotSubsystem.setPosition(IntakeState.L1).andThen(setScoring(ElevatorState.L1)), () -> m_scoringLevel == ElevatorState.L1), this);
   }
 
   public SequentialCommandGroup goToHandoff() {
@@ -158,16 +158,16 @@ public class Superstructure extends SubsystemBase {
     return deadlineWithRequirements(new ParallelDeadlineGroup(m_clawSubsystem.intake().andThen(m_clawSubsystem.setGamePiece(true)), setScoring(ElevatorState.STOW), new ParallelCommandGroup(m_elevatorSubsystem.setPosition(ElevatorState.GROUND_ALGAE), m_pivotSubsystem.setPosition(IntakeState.STOW)).andThen(m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.GROUND_ALGAE)))), this);
   }
 
-  public SequentialCommandGroup reefAlgae() {
-    return sequentialWithRequirements(new SequentialCommandGroup(setScoring(ElevatorState.STOW), goToAlgae(), m_clawSubsystem.intake(), m_clawSubsystem.setGamePiece(true)), this);
+  public SequentialCommandGroup reefAlgae(boolean high) {
+    return sequentialWithRequirements(new SequentialCommandGroup(setScoring(ElevatorState.STOW), goToAlgae(high), m_clawSubsystem.eject(), m_clawSubsystem.setGamePiece(true)), this);
   }
 
   public ConditionalCommand scoreNet() {
-    return conditionalWithRequirements(new ConditionalCommand(m_elevatorSubsystem.goUp(0.5).alongWith(m_armSubsystem.switchSides(false), new WaitCommand(0.125).andThen(m_clawSubsystem.eject(), m_clawSubsystem.setGamePiece(false))).andThen(setScoring(ElevatorState.STOW)), m_armSubsystem.switchSides(true).andThen(goToLevel(ElevatorState.NET), setScoring(ElevatorState.NET)), () -> m_scoringLevel == ElevatorState.NET), this);
+    return conditionalWithRequirements(new ConditionalCommand(m_elevatorSubsystem.goUp(0.5).alongWith(m_armSubsystem.switchSides(false), new WaitCommand(0.125).andThen(runForTime(m_clawSubsystem.eject(), 1), m_clawSubsystem.setGamePiece(false))).andThen(setScoring(ElevatorState.STOW)), m_armSubsystem.switchSides(true).andThen(goToLevel(ElevatorState.NET), setScoring(ElevatorState.NET)), () -> m_scoringLevel == ElevatorState.NET), this);
   }
 
   public ConditionalCommand scoreProcessor() {
-    return conditionalWithRequirements(new ConditionalCommand(m_clawSubsystem.eject().andThen(m_armSubsystem.setPosition(ArmState.STOW)).andThen(setScoring(ElevatorState.STOW)), goToLevel(ElevatorState.PROCESSOR).andThen(setScoring(ElevatorState.PROCESSOR)), () -> m_scoringLevel == ElevatorState.PROCESSOR), this);
+    return conditionalWithRequirements(new ConditionalCommand(runForTime(m_clawSubsystem.eject(), 0.5).andThen(m_armSubsystem.setPosition(ArmState.STOW)).andThen(setScoring(ElevatorState.STOW)), goToLevel(ElevatorState.PROCESSOR).andThen(setScoring(ElevatorState.PROCESSOR)), () -> m_scoringLevel == ElevatorState.PROCESSOR), this);
   }
 
   public SequentialCommandGroup deployClimber() {
@@ -190,7 +190,7 @@ public class Superstructure extends SubsystemBase {
     return Commands.runOnce(() -> {
       m_state = state;
       System.out.println("SwitchModes");
-    });
+    }, this);
   }
 
   private Command setScoring(ElevatorState level){

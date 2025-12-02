@@ -74,7 +74,7 @@ public class SwerveSubsystem extends SubsystemBase {
     /**
      * Enable m_vision odometry updates while driving.
      */
-    private final boolean m_visionDriveTest = false;
+    private boolean m_visionDriveTest = false;
     /**
      * PhotonVision class to keep an accurate odometry.
      */
@@ -179,6 +179,7 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putData("debug pose", m_pose);
         SmartDashboard.putNumber("left align error", getNearestReefFace()[0].getTranslation().getDistance(getPose().getTranslation()));
         SmartDashboard.putNumber("right align error", getNearestReefFace()[1].getTranslation().getDistance(getPose().getTranslation()));
+        SmartDashboard.putBoolean("Vison On", m_visionDriveTest);
     }
 
     @Override
@@ -793,5 +794,11 @@ public class SwerveSubsystem extends SubsystemBase {
             new InstantCommand(),
             shouldAlign),
          this);
+    }
+
+    public Command toggleVision(){
+        return Commands.runOnce(()->{
+            m_visionDriveTest = ! m_visionDriveTest;
+        });
     }
 }

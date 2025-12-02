@@ -305,7 +305,7 @@ public class Vision {
      * Left Camera
      */
     LEFT_FRONT("fl",
-        new Rotation3d(0, Math.toRadians(45), Math.toRadians(30)),
+        new Rotation3d(Math.toRadians(180), Math.toRadians(45), Math.toRadians(30)),
         new Translation3d(Units.inchesToMeters(-3.943),
             Units.inchesToMeters(7.9),
             Units.inchesToMeters(27.655)),
@@ -314,7 +314,7 @@ public class Vision {
      * Right Camera
      */
     LEFT_BACK("bl",
-        new Rotation3d(0, Math.toRadians(45), Math.toRadians(120)),
+        new Rotation3d(Math.toRadians(180), Math.toRadians(45), Math.toRadians(120)),
         new Translation3d(Units.inchesToMeters(-5.053),
             Units.inchesToMeters(7.908),
             Units.inchesToMeters(30.16)),
