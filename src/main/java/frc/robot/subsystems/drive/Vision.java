@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Microseconds;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -71,6 +72,9 @@ public class Vision {
    */
   private Field2d m_field2d;
 
+  public static Translation3d tagToBranchRight = new Translation3d(0, 0, 0);
+  
+  public static Translation3d tagToBranchLeft = new Translation3d(0, 0, 0);
   /**
    * Constructor for the Vision class.
    *
@@ -595,7 +599,29 @@ public class Vision {
         }
       }
     }
-
+    
   }
-
+    public Transform3d getCameraTransform(AprilTag tag, Boolean left){
+    for (Cameras camera : Cameras.values()){
+      var result = camera.resultsList.get(0);
+      if (result.hasTargets()){
+        PhotonTrackedTarget target = result.getBestTarget();
+        if (target.getFiducialId() == tag.ID){
+          Transform3d robotToTag = target.getBestCameraToTarget().plus(camera.robotToCamTransform);
+          Double tagRotationRadian = tag.pose.getRotation().getZ();
+          double fieldRelativeX = 0;
+          double fieldRelativeY = 0;
+          if (left){
+            fieldRelativeX = tagToBranchLeft.getX() * Math.cos(tagRotationRadian) - tagToBranchLeft.getY() * Math.sin(tagRotationRadian);
+            fieldRelativeY = tagToBranchLeft.getY() * Math.cos(tagRotationRadian) + tagToBranchLeft.getX() * Math.sin(tagRotationRadian);
+          }else{
+            fieldRelativeX = tagToBranchRight.getX() * Math.cos(tagRotationRadian) - tagToBranchRight.getY() * Math.sin(tagRotationRadian);
+            fieldRelativeY = tagToBranchRight.getY() * Math.cos(tagRotationRadian) + tagToBranchRight.getX() * Math.sin(tagRotationRadian);
+          }
+          return new Transform3d(fieldRelativeX, fieldRelativeY, 0, tag.pose.getRotation());
+        }
+      }
+    }
+    return new Transform3d();
+  }
 }
