@@ -601,27 +601,30 @@ public class Vision {
     }
     
   }
-    public Transform3d getCameraTransform(AprilTag tag, Boolean left){
+    public Pose2d getCameraTransform(AprilTag tag, Boolean left){
     for (Cameras camera : Cameras.values()){
-      var result = camera.resultsList.get(0);
-      if (result.hasTargets()){
-        PhotonTrackedTarget target = result.getBestTarget();
-        if (target.getFiducialId() == tag.ID){
-          Transform3d robotToTag = target.getBestCameraToTarget().plus(camera.robotToCamTransform);
-          Double tagRotationRadian = tag.pose.getRotation().getZ();
-          double fieldRelativeX = 0;
-          double fieldRelativeY = 0;
-          if (left){
-            fieldRelativeX = tagToBranchLeft.getX() * Math.cos(tagRotationRadian) - tagToBranchLeft.getY() * Math.sin(tagRotationRadian);
-            fieldRelativeY = tagToBranchLeft.getY() * Math.cos(tagRotationRadian) + tagToBranchLeft.getX() * Math.sin(tagRotationRadian);
-          }else{
-            fieldRelativeX = tagToBranchRight.getX() * Math.cos(tagRotationRadian) - tagToBranchRight.getY() * Math.sin(tagRotationRadian);
-            fieldRelativeY = tagToBranchRight.getY() * Math.cos(tagRotationRadian) + tagToBranchRight.getX() * Math.sin(tagRotationRadian);
+      if (camera.resultsList.size() > 0){
+        var result = camera.resultsList.get(0);
+        if (result.hasTargets()){
+          PhotonTrackedTarget target = result.getBestTarget();
+          if (target.getFiducialId() == tag.ID){
+            Transform3d robotToTag = target.getBestCameraToTarget().plus(camera.robotToCamTransform);
+            Double tagRotationRadian = tag.pose.getRotation().getZ();
+            double fieldRelativeX = 0;
+            double fieldRelativeY = 0;
+            if (left){
+              fieldRelativeX = tagToBranchLeft.getX() * Math.cos(tagRotationRadian) - tagToBranchLeft.getY() * Math.sin(tagRotationRadian);
+              fieldRelativeY = tagToBranchLeft.getY() * Math.cos(tagRotationRadian) + tagToBranchLeft.getX() * Math.sin(tagRotationRadian);
+            }else{
+              fieldRelativeX = tagToBranchRight.getX() * Math.cos(tagRotationRadian) - tagToBranchRight.getY() * Math.sin(tagRotationRadian);
+              fieldRelativeY = tagToBranchRight.getY() * Math.cos(tagRotationRadian) + tagToBranchRight.getX() * Math.sin(tagRotationRadian);
+            }
+            // System.out.println(fieldRelativeX + " , " + fieldRelativeY);
+            return new Pose2d(fieldRelativeX + tag.pose.getX(), fieldRelativeY + tag.pose.getY(), new Rotation2d(tag.pose.getRotation().getZ()));
           }
-          return new Transform3d(fieldRelativeX, fieldRelativeY, 0, tag.pose.getRotation());
         }
       }
     }
-    return new Transform3d();
+    return new Pose2d();
   }
 }

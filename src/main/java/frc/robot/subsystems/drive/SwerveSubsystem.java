@@ -18,16 +18,23 @@ import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -45,6 +52,7 @@ import frc.robot.Constants.DrivebaseConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Vision.Cameras;
 
+import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -74,28 +82,23 @@ public class SwerveSubsystem extends SubsystemBase {
     /**
      * Enable m_vision odometry updates while driving.
      */
-    private boolean m_visionDriveTest = false;
+    private boolean m_visionDriveTest = true;
     /**
      * PhotonVision class to keep an accurate odometry.
      */
     private Vision m_vision;
 
-    private Pose2d[][] m_reefPoses = {
-        {new Pose2d(11.766,4, Rotation2d.fromDegrees(90)), new Pose2d(11.766,4.315, Rotation2d.fromDegrees(90))},
-        {new Pose2d(12.395,5.091, Rotation2d.fromDegrees(30)), new Pose2d(12.681,5.276, Rotation2d.fromDegrees(30))},
-        {new Pose2d(13.909,4.979, Rotation2d.fromDegrees(330)), new Pose2d(13.635,5.121, Rotation2d.fromDegrees(330))},
-        {new Pose2d(14.324,3.73, Rotation2d.fromDegrees(270)), new Pose2d(14.288,4.069, Rotation2d.fromDegrees(270))},
-        {new Pose2d(13.449,2.809, Rotation2d.fromDegrees(210)), new Pose2d(13.708,2.958, Rotation2d.fromDegrees(210))},
-        {new Pose2d(12.452,2.91, Rotation2d.fromDegrees(150)), new Pose2d(12.173,3.105, Rotation2d.fromDegrees(150))}};
+    private StructPublisher<Pose2d> cameraPosition = NetworkTableInstance.getDefault().getStructTopic("Camera Position", Pose2d.struct).publish();
 
-    Supplier<Pose2d[]> m_alignPose = () -> getNearestReefFace();
+    private AprilTagFieldLayout m_layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+
+    Supplier<Pose3d> m_alignPose = () -> getNearestReefFace();
 
     private double m_fieldLength = 17.55;
 
     private PIDController m_xPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
     private PIDController m_yPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
 
-    private Field2d m_pose = new Field2d();
 
     /**
      * Initialize {@link SwerveDrive} with the directory provided.
@@ -174,12 +177,12 @@ public class SwerveSubsystem extends SubsystemBase {
             m_swerveDrive.updateOdometry();
             m_vision.updatePoseEstimation(m_swerveDrive);
         }
-        m_pose.setRobotPose(getNearestReefFace()[0]);
         m_alignPose = () -> getNearestReefFace();
-        SmartDashboard.putData("debug pose", m_pose);
-        SmartDashboard.putNumber("left align error", getNearestReefFace()[0].getTranslation().getDistance(getPose().getTranslation()));
-        SmartDashboard.putNumber("right align error", getNearestReefFace()[1].getTranslation().getDistance(getPose().getTranslation()));
+        Translation3d robotPose3d = new Translation3d(getPose().getX(), getPose().getY(), 0);
+        SmartDashboard.putNumber("left align error", getNearestReefFace().getTranslation().getDistance(robotPose3d));
+        SmartDashboard.putNumber("right align error", getNearestReefFace().getTranslation().getDistance(robotPose3d));
         SmartDashboard.putBoolean("Vison On", m_visionDriveTest);
+        // cameraPosition.set(m_vision.getCameraTransform(m_layout.getTags().get(8), true));
     }
 
     @Override
@@ -769,32 +772,24 @@ public class SwerveSubsystem extends SubsystemBase {
         return m_swerveDrive;
     }
 
-    public Pose2d[] getNearestReefFace() {
-        Pose2d[] face = new Pose2d[2];
-        double minDist = 100;
-        for(int i = 0; i < m_reefPoses.length; i++){
-            Translation2d leftBranch = m_reefPoses[i][0].getTranslation();
-            Translation2d rightBranch = m_reefPoses[i][1].getTranslation();
-            if(!isRedAlliance()){
-                leftBranch.plus(new Translation2d(-1 * (2 * leftBranch.getX() - m_fieldLength),0));
-                rightBranch.plus(new Translation2d(-1 * (2 * rightBranch.getX() - m_fieldLength),0));
-            }
-            double avgDist = (leftBranch.getDistance(getPose().getTranslation())+rightBranch.getDistance(getPose().getTranslation()))/2;
-            if(minDist > avgDist){
-                minDist = avgDist;
-                face = m_reefPoses[i];
+    public Pose3d getNearestReefFace() {
+        Double[] distances = new Double[6];
+        for (int i = 0; i < 6; i++){
+            Optional<Pose3d> aprilTagPose = m_layout.getTagPose(isRedAlliance() ? i + 6: i + 17);
+            if (aprilTagPose.isPresent()){
+                Translation3d robotPose3d = new Translation3d(getPose().getX(), getPose().getY(), 0);
+                distances[i] = aprilTagPose.get().getTranslation().getDistance(robotPose3d);
             }
         }
-        return face;
+        int min = 0;
+        for (int i = 1; i < 6; i++){
+            if (distances[i] < distances[min]){
+                i = min;
+            }
+        }
+        return m_layout.getTagPose(isRedAlliance() ? min + 6: min + 17).get();
     }
 
-    public ConditionalCommand autoAlign(Trigger shouldAlign, boolean left) {
-        return Superstructure.conditionalWithRequirements(new ConditionalCommand(
-            left ? driveToPose(m_alignPose.get()[0]).andThen(PIDAlign(m_alignPose.get()[0])) : driveToPose(m_alignPose.get()[1]).andThen(PIDAlign(m_alignPose.get()[1])),
-            new InstantCommand(),
-            shouldAlign),
-         this);
-    }
 
     public Command toggleVision(){
         return Commands.runOnce(()->{
