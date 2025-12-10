@@ -35,6 +35,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -92,7 +93,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private AprilTagFieldLayout m_layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
 
-    Supplier<Pose3d> m_alignPose = () -> getNearestReefFace();
+    Supplier<Pose2d> m_alignPose = () -> getNearestReefFace();
 
     private double m_fieldLength = 17.55;
 
@@ -178,9 +179,8 @@ public class SwerveSubsystem extends SubsystemBase {
             m_vision.updatePoseEstimation(m_swerveDrive);
         }
         m_alignPose = () -> getNearestReefFace();
-        Translation3d robotPose3d = new Translation3d(getPose().getX(), getPose().getY(), 0);
-        SmartDashboard.putNumber("left align error", getNearestReefFace().getTranslation().getDistance(robotPose3d));
-        SmartDashboard.putNumber("right align error", getNearestReefFace().getTranslation().getDistance(robotPose3d));
+        SmartDashboard.putNumber("left align error", getNearestReefFace().getTranslation().getDistance(getPose().getTranslation()));
+        SmartDashboard.putNumber("right align error", getNearestReefFace().getTranslation().getDistance(getPose().getTranslation()));
         SmartDashboard.putBoolean("Vison On", m_visionDriveTest);
         // cameraPosition.set(m_vision.getCameraTransform(m_layout.getTags().get(8), true));
     }
@@ -772,7 +772,19 @@ public class SwerveSubsystem extends SubsystemBase {
         return m_swerveDrive;
     }
 
-    public Pose3d getNearestReefFace() {
+    public ConditionalCommand moveToReefFace(){
+        Translation3d robotPose3d = new Translation3d(getPose().getX(), getPose().getY(), 0);
+        DoubleSupplier distanceToReef = () -> getNearestReefFace().getTranslation().getDistance(getPose().getTranslation());
+        Supplier<Pose2d> reefBranchOffset = () -> new Pose2d(getNearestReefFace().getTranslation().plus(m_vision.getCameraTransform(m_layout.getTags().get(getNearestTag()), false).getTranslation()), getNearestReefFace().getRotation());
+        //Placeholder value, I don't know when to make this threshold
+        double reefDistanceThreshold = 10;
+        return Superstructure.conditionalWithRequirements(new ConditionalCommand(PIDAlign(reefBranchOffset.get()), driveToPose(getNearestReefFace()).andThen(moveToReefFace()), () -> distanceToReef.getAsDouble() < reefDistanceThreshold), this);
+    }
+    public Pose2d getNearestReefFace() {
+        Pose3d tagPose = m_layout.getTagPose(isRedAlliance() ? getNearestTag() + 6: getNearestTag() + 17).get();
+        return new Pose2d(tagPose.getX(), tagPose.getY(), new Rotation2d(tagPose.getRotation().getZ()));
+    } 
+    public int getNearestTag(){
         Double[] distances = new Double[6];
         for (int i = 0; i < 6; i++){
             Optional<Pose3d> aprilTagPose = m_layout.getTagPose(isRedAlliance() ? i + 6: i + 17);
@@ -784,12 +796,11 @@ public class SwerveSubsystem extends SubsystemBase {
         int min = 0;
         for (int i = 1; i < 6; i++){
             if (distances[i] < distances[min]){
-                i = min;
+                min = i;
             }
         }
-        return m_layout.getTagPose(isRedAlliance() ? min + 6: min + 17).get();
+        return min;
     }
-
 
     public Command toggleVision(){
         return Commands.runOnce(()->{
