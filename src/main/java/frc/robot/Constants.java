@@ -42,7 +42,7 @@ public final class Constants
     // Hold time on motor brakes when disabled
     public static final double k_wheelLockTime = 10; // seconds
 
-    public static final double k_alignTolerance = 0.0125;
+    public static final double k_alignTolerance = 0.5125;
     public static final double k_alignP = 2.5;
     public static final double k_alignI = 0;
     public static final double k_alignD = 0;

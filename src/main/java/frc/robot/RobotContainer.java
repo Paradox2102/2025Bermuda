@@ -152,6 +152,7 @@ public class RobotContainer {
 
     m_driverController.povUp().onTrue(m_swerveSubsystem.resetGyro());
 
+    m_driverController.povDown().onTrue(m_swerveSubsystem.moveToReefFace());
     m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
     m_clawSubsystem.setDefaultCommand(m_clawSubsystem.hold());
 

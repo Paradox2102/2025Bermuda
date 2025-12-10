@@ -18,7 +18,6 @@ import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
@@ -26,7 +25,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -35,31 +33,24 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.Constants.DrivebaseConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Vision.Cameras;
 
-import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
@@ -91,11 +82,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private StructPublisher<Pose2d> cameraPosition = NetworkTableInstance.getDefault().getStructTopic("Camera Position", Pose2d.struct).publish();
 
+    private StructPublisher<Pose2d> alignTarget = NetworkTableInstance.getDefault().getStructTopic("Align Position", Pose2d.struct).publish();
+
     private AprilTagFieldLayout m_layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
 
     Supplier<Pose2d> m_alignPose = () -> getNearestReefFace();
-
-    private double m_fieldLength = 17.55;
 
     private PIDController m_xPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
     private PIDController m_yPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
@@ -312,8 +303,10 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Command PIDAlign(Pose2d pose){
+        //Work In Progress
         return Commands.run(() -> {
-            double x = -m_xPID.calculate(getPose().getX(), pose.getX());
+            double side = isRedAlliance() ? -1 : 1;
+            double x = side * m_xPID.calculate(getPose().getX(), pose.getX());
             double y = m_yPID.calculate(getPose().getY(), pose.getY());
             drive(new ChassisSpeeds(x, y, 0));
         }, this).until(() -> Math.abs(pose.getTranslation().getDistance(getPose().getTranslation())) < DrivebaseConstants.k_alignTolerance);
@@ -773,12 +766,12 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public ConditionalCommand moveToReefFace(){
-        Translation3d robotPose3d = new Translation3d(getPose().getX(), getPose().getY(), 0);
         DoubleSupplier distanceToReef = () -> getNearestReefFace().getTranslation().getDistance(getPose().getTranslation());
         Supplier<Pose2d> reefBranchOffset = () -> new Pose2d(getNearestReefFace().getTranslation().plus(m_vision.getCameraTransform(m_layout.getTags().get(getNearestTag()), false).getTranslation()), getNearestReefFace().getRotation());
         //Placeholder value, I don't know when to make this threshold
-        double reefDistanceThreshold = 10;
-        return Superstructure.conditionalWithRequirements(new ConditionalCommand(PIDAlign(reefBranchOffset.get()), driveToPose(getNearestReefFace()).andThen(moveToReefFace()), () -> distanceToReef.getAsDouble() < reefDistanceThreshold), this);
+        double reefDistanceThreshold = 1000;
+        alignTarget.set(reefBranchOffset.get());
+        return Superstructure.conditionalWithRequirements(new ConditionalCommand(PIDAlign(reefBranchOffset.get()), driveToPose(getNearestReefFace()), () -> distanceToReef.getAsDouble() < reefDistanceThreshold), this);
     }
     public Pose2d getNearestReefFace() {
         Pose3d tagPose = m_layout.getTagPose(isRedAlliance() ? getNearestTag() + 6: getNearestTag() + 17).get();
