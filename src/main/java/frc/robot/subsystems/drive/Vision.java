@@ -74,7 +74,7 @@ public class Vision {
 
   public static Translation3d tagToBranchRight = new Translation3d(0, 0, 0);
   
-  public static Translation3d tagToBranchLeft = new Translation3d(0, 0, 0);
+  public static Translation3d tagToBranchLeft = new Translation3d(0.427, -0.075, 0);
   /**
    * Constructor for the Vision class.
    *

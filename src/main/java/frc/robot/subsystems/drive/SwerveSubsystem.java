@@ -20,6 +20,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -39,6 +40,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
@@ -90,6 +92,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private PIDController m_xPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
     private PIDController m_yPID = new PIDController(DrivebaseConstants.k_alignP, DrivebaseConstants.k_alignI, DrivebaseConstants.k_alignD);
+    private PIDController m_orientPID = new PIDController(Constants.DrivebaseConstants.k_rotateP, Constants.DrivebaseConstants.k_rotateI,Constants.DrivebaseConstants.k_rotateD);
 
 
     /**
@@ -139,6 +142,9 @@ public class SwerveSubsystem extends SubsystemBase {
         }
         setupPathPlanner();
         //RobotModeTriggers.autonomous().onTrue(Commands.runOnce(this::zeroGyroWithAlliance));
+
+        m_orientPID.enableContinuousInput(-180, 180);
+        m_orientPID.setIZone(Constants.DrivebaseConstants.k_rotateIZone);
     }
 
     /**
@@ -288,7 +294,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param pose Target {@link Pose2d} to go to.
      * @return PathFinding command
      */
-    public Command driveToPose(Pose2d pose) {
+    public Command driveToPose(Supplier<Pose2d> pose) {
         // Create the constraints to use while pathfinding
         PathConstraints constraints = new PathConstraints(
                 m_swerveDrive.getMaximumChassisVelocity(), 4.0,
@@ -296,20 +302,29 @@ public class SwerveSubsystem extends SubsystemBase {
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         return AutoBuilder.pathfindToPose(
-                pose,
+                pose.get(),
                 constraints,
                 edu.wpi.first.units.Units.MetersPerSecond.of(0) // Goal end velocity in meters/sec
         );
     }
 
-    public Command PIDAlign(Pose2d pose){
+    public Command PIDAlign(Supplier<Pose2d> pose){
         //Work In Progress
-        return Commands.run(() -> {
-            double side = isRedAlliance() ? -1 : 1;
-            double x = side * m_xPID.calculate(getPose().getX(), pose.getX());
-            double y = m_yPID.calculate(getPose().getY(), pose.getY());
-            drive(new ChassisSpeeds(x, y, 0));
-        }, this).until(() -> Math.abs(pose.getTranslation().getDistance(getPose().getTranslation())) < DrivebaseConstants.k_alignTolerance);
+        return Commands.runEnd(() -> {
+            double side = isRedAlliance() ? 1 : -1;
+            double x = MathUtil.clamp(side * m_xPID.calculate(getPose().getX(), pose.get().getX()), -0.8, 0.8);
+            double y = MathUtil.clamp(m_yPID.calculate(getPose().getY(), pose.get().getY()), -0.8, 0.8);
+            drive(new Translation2d(x, y), orientPID(() -> pose.get().getRotation().getDegrees()).get().getDegrees(), true);
+        },() -> {
+            drive(new ChassisSpeeds(0 ,0, 0));
+        }, this).until(() -> Math.abs(pose.get().getTranslation().getDistance(getPose().getTranslation())) < DrivebaseConstants.k_alignTolerance);
+    }
+
+    public Supplier<Rotation2d> orientPID(DoubleSupplier targetRotation){
+        double setPointDegrees = targetRotation.getAsDouble();
+        double heading = getPose().getRotation().getDegrees();
+        double rotation = MathUtil.clamp(m_orientPID.calculate(heading, setPointDegrees),-0.8, 0.8);
+        return () -> Rotation2d.fromDegrees(rotation);
     }
 
     /**
@@ -765,13 +780,18 @@ public class SwerveSubsystem extends SubsystemBase {
         return m_swerveDrive;
     }
 
-    public ConditionalCommand moveToReefFace(){
-        DoubleSupplier distanceToReef = () -> getNearestReefFace().getTranslation().getDistance(getPose().getTranslation());
-        Supplier<Pose2d> reefBranchOffset = () -> new Pose2d(getNearestReefFace().getTranslation().plus(m_vision.getCameraTransform(m_layout.getTags().get(getNearestTag()), false).getTranslation()), getNearestReefFace().getRotation());
-        //Placeholder value, I don't know when to make this threshold
-        double reefDistanceThreshold = 1000;
-        alignTarget.set(reefBranchOffset.get());
-        return Superstructure.conditionalWithRequirements(new ConditionalCommand(PIDAlign(reefBranchOffset.get()), driveToPose(getNearestReefFace()), () -> distanceToReef.getAsDouble() < reefDistanceThreshold), this);
+    public SequentialCommandGroup moveToReefFace(){
+        return displayAlignTarget(() -> getAlignTargetPos()).andThen(PIDAlign(() -> getAlignTargetPos()));
+    }
+    public Pose2d getAlignTargetPos(){
+        return new Pose2d(getNearestReefFace().getTranslation().plus(m_vision.getCameraTransform(m_layout.getTags().get(getNearestTag()), false).getTranslation()), getNearestReefFace().getRotation());
+    }
+    public Double getDistanceToReef(){
+        return getNearestReefFace().getTranslation().getDistance(getPose().getTranslation());
+    }
+    public Command displayAlignTarget(Supplier<Pose2d> pose){
+        SmartDashboard.putNumber("Reef Distance", getDistanceToReef());
+        return Commands.runOnce(() -> {alignTarget.set(pose.get());});
     }
     public Pose2d getNearestReefFace() {
         Pose3d tagPose = m_layout.getTagPose(isRedAlliance() ? getNearestTag() + 6: getNearestTag() + 17).get();
