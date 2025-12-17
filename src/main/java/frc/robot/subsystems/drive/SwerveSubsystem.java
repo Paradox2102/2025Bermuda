@@ -176,6 +176,7 @@ public class SwerveSubsystem extends SubsystemBase {
             m_vision.updatePoseEstimation(m_swerveDrive);
         }
         m_alignPose = () -> getNearestReefFace();
+        System.out.println(getNearestTag());
         SmartDashboard.putNumber("left align error", getNearestReefFace().getTranslation().getDistance(getPose().getTranslation()));
         SmartDashboard.putNumber("right align error", getNearestReefFace().getTranslation().getDistance(getPose().getTranslation()));
         SmartDashboard.putBoolean("Vison On", m_visionDriveTest);
@@ -784,7 +785,7 @@ public class SwerveSubsystem extends SubsystemBase {
         return displayAlignTarget(() -> getAlignTargetPos()).andThen(PIDAlign(() -> getAlignTargetPos()));
     }
     public Pose2d getAlignTargetPos(){
-        return new Pose2d(getNearestReefFace().getTranslation().plus(m_vision.getCameraTransform(m_layout.getTags().get(getNearestTag()), false).getTranslation()), getNearestReefFace().getRotation());
+        return new Pose2d(getNearestReefFace().getTranslation().plus(m_vision.getCameraTransform(m_layout.getTags().get(getNearestTag()), true).getTranslation()), getNearestReefFace().getRotation());
     }
     public Double getDistanceToReef(){
         return getNearestReefFace().getTranslation().getDistance(getPose().getTranslation());
@@ -794,8 +795,8 @@ public class SwerveSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> {alignTarget.set(pose.get());});
     }
     public Pose2d getNearestReefFace() {
-        Pose3d tagPose = m_layout.getTagPose(isRedAlliance() ? getNearestTag() + 6: getNearestTag() + 17).get();
-        return new Pose2d(tagPose.getX(), tagPose.getY(), new Rotation2d(tagPose.getRotation().getZ()));
+        Pose3d tagPose = m_layout.getTagPose(getNearestTag()).get();
+        return new Pose2d(tagPose.getX(), tagPose.getY(), new Rotation2d(tagPose.getRotation().getZ() + (Math.PI/2)));
     } 
     public int getNearestTag(){
         Double[] distances = new Double[6];
@@ -812,7 +813,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 min = i;
             }
         }
-        return min;
+        return isRedAlliance() ? min + 6: min + 17;
     }
 
     public Command toggleVision(){

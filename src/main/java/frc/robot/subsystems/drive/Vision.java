@@ -72,7 +72,7 @@ public class Vision {
    */
   private Field2d m_field2d;
 
-  public static Translation3d tagToBranchRight = new Translation3d(0, 0, 0);
+  public static Translation3d tagToBranchRight = new Translation3d(0.427, 0.075, 0);
   
   public static Translation3d tagToBranchLeft = new Translation3d(0.427, -0.075, 0);
   /**
@@ -608,8 +608,9 @@ public class Vision {
         if (result.hasTargets()){
           PhotonTrackedTarget target = result.getBestTarget();
           if (target.getFiducialId() == tag.ID){
-            Transform3d robotToTag = target.getBestCameraToTarget().plus(camera.robotToCamTransform);
-            Double tagRotationRadian = tag.pose.getRotation().getZ();
+            System.out.println("Target ID: " + target.getFiducialId());
+            Translation3d robotToTag = target.getBestCameraToTarget().getTranslation().plus(camera.robotToCamTransform.getTranslation());
+            double tagRotationRadian = tag.pose.getRotation().getZ();
             double fieldRelativeX = 0;
             double fieldRelativeY = 0;
             if (left){
@@ -620,7 +621,7 @@ public class Vision {
               fieldRelativeY = tagToBranchRight.getY() * Math.cos(tagRotationRadian) + tagToBranchRight.getX() * Math.sin(tagRotationRadian);
             }
             // System.out.println(fieldRelativeX + " , " + fieldRelativeY);
-            return new Pose2d(fieldRelativeX + tag.pose.getX(), fieldRelativeY + tag.pose.getY(), new Rotation2d(tag.pose.getRotation().getZ()));
+            return new Pose2d(fieldRelativeX + robotToTag.getX(), fieldRelativeY + robotToTag.getY(), new Rotation2d(tag.pose.getRotation().getZ()));
           }
         }
       }
