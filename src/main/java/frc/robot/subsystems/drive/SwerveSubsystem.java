@@ -5,6 +5,7 @@
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -17,6 +18,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+import com.therekrab.autopilot.APTarget;
+import com.therekrab.autopilot.Autopilot.APResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -34,6 +37,9 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.AngularVelocityUnit;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -50,11 +56,14 @@ import frc.robot.subsystems.drive.Vision.Cameras;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import org.dyn4j.geometry.Rotation;
 import org.json.simple.parser.ParseException;
 import org.photonvision.targeting.PhotonPipelineResult;
 import swervelib.SwerveController;
@@ -176,7 +185,7 @@ public class SwerveSubsystem extends SubsystemBase {
             m_vision.updatePoseEstimation(m_swerveDrive);
         }
         m_alignPose = () -> getNearestReefFace();
-        System.out.println(getNearestTag());
+        // System.out.println(getNearestTag());
         SmartDashboard.putNumber("left align error", getNearestReefFace().getTranslation().getDistance(getPose().getTranslation()));
         SmartDashboard.putNumber("right align error", getNearestReefFace().getTranslation().getDistance(getPose().getTranslation()));
         SmartDashboard.putBoolean("Vison On", m_visionDriveTest);
@@ -319,6 +328,27 @@ public class SwerveSubsystem extends SubsystemBase {
         },() -> {
             drive(new ChassisSpeeds(0 ,0, 0));
         }, this).until(() -> Math.abs(pose.get().getTranslation().getDistance(getPose().getTranslation())) < DrivebaseConstants.k_alignTolerance);
+    }
+
+    public Command DriveToTarget(Pose2d pose, Rotation2d entryAngle){
+        return Commands.run(() ->{
+            APTarget target = Pose2dToAPTarget(pose, entryAngle);
+            APResult output = Constants.AutopilotConstants.autopilot.calculate(pose, getFieldVelocity(), target);
+
+            LinearVelocity veloX = output.vx();
+            LinearVelocity veloY = output.vy();
+            SmartDashboard.putString("Velocity", String.format("\n X: %f Y: %f", veloX.baseUnitMagnitude(), veloY.baseUnitMagnitude()));
+            Rotation2d headingRefrence = output.targetAngle();
+
+            setChassisSpeeds(new ChassisSpeeds(veloX, veloY, RotationsPerSecond.of(0)));
+            
+        }, this)
+        .until(() -> Constants.AutopilotConstants.autopilot.atTarget(getPose(), Pose2dToAPTarget(pose, entryAngle)))
+        .finallyDo(() -> drive(new ChassisSpeeds(0, 0, 0)));
+    }
+
+    public APTarget Pose2dToAPTarget(Pose2d pose, Rotation2d entryAngle){
+        return new APTarget(pose).withEntryAngle(entryAngle);
     }
 
     public Supplier<Rotation2d> orientPID(DoubleSupplier targetRotation){
@@ -782,7 +812,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public SequentialCommandGroup moveToReefFace(){
-        return displayAlignTarget(() -> getAlignTargetPos()).andThen(PIDAlign(() -> getAlignTargetPos()));
+        return displayAlignTarget(() -> getAlignTargetPos()).andThen(DriveToTarget(getAlignTargetPos(), new Rotation2d(0.0)));
     }
     public Pose2d getAlignTargetPos(){
         return new Pose2d(getNearestReefFace().getTranslation().plus(m_vision.getCameraTransform(m_layout.getTags().get(getNearestTag()), true).getTranslation()), getNearestReefFace().getRotation());

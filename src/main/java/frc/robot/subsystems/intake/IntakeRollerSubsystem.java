@@ -89,9 +89,9 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Roller Speed", getSpeed());
-    SmartDashboard.putNumber("Roller Current", getCurrentDraw());
-    SmartDashboard.putBoolean("Roller trigger", pickCoral.getAsBoolean());
+    // SmartDashboard.putNumber("Roller Speed", getSpeed());
+    // SmartDashboard.putNumber("Roller Current", getCurrentDraw());
+    // SmartDashboard.putBoolean("Roller trigger", pickCoral.getAsBoolean());
     if(pickCoral.getAsBoolean()){
       m_hasCoral = true;
     }

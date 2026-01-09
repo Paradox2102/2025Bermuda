@@ -238,15 +238,15 @@ public class ElevatorSubsystem extends SubsystemBase {
     if(!m_manual){
       m_leadMotor.setVoltage(m_output);
     }
-    SmartDashboard.putNumber("Elev Height", getPosition());
-    SmartDashboard.putNumber("Output", m_output);
-    SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));
-    SmartDashboard.putNumber("Pid", pid);
-    SmartDashboard.putString("level", m_state.getName());
-    SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
-    SmartDashboard.putNumber("velocity", getVelocity());
-    SmartDashboard.putBoolean("switch", m_limitSwitch.get());
-    SmartDashboard.putNumber("elev current", m_leadMotor.getOutputCurrent());
+    // SmartDashboard.putNumber("Elev Height", getPosition());
+    // SmartDashboard.putNumber("Output", m_output);
+    // SmartDashboard.putNumber("Feedforward", m_feedforward.calculate(m_pid.getSetpoint().velocity));
+    // SmartDashboard.putNumber("Pid", pid);
+    // SmartDashboard.putString("level", m_state.getName());
+    // SmartDashboard.putNumber("target vel", m_pid.getSetpoint().velocity);
+    // SmartDashboard.putNumber("velocity", getVelocity());
+    // SmartDashboard.putBoolean("switch", m_limitSwitch.get());
+    // SmartDashboard.putNumber("elev current", m_leadMotor.getOutputCurrent());
     m_oldVel = getVelocity();
   }
 

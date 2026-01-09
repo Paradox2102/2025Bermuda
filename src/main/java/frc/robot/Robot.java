@@ -36,10 +36,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData(CommandScheduler.getInstance());
     posePublisher.set(m_robotContainer.m_swerveSubsystem.getPose());
     zeroedComponentPoses.set(new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
-    finalComponentPoses.set(new Pose3d[] {
-      new Pose3d(0.226,0,0.158, new Rotation3d(0, Math.toRadians(-m_robotContainer.m_pivotSubsystem.getAngle()),0)),
-      new Pose3d(-0.069,0, 0.343 + m_robotContainer.m_elevatorSubsystem.getPosition(), new Rotation3d(0,0,0)),
-      new Pose3d(-0.069,0, 0.343 + m_robotContainer.m_elevatorSubsystem.getPosition(), new Rotation3d(Math.toRadians(m_robotContainer.m_armSubsystem.getAngle()),0,0))});
+    // finalComponentPoses.set(new Pose3d[] {
+      // new Pose3d(0.226,0,0.158, new Rotation3d(0, Math.toRadians(-m_robotContainer.m_pivotSubsystem.getAngle()),0)),
+      // new Pose3d(-0.069,0, 0.343 + m_robotContainer.m_elevatorSubsystem.getPosition(), new Rotation3d(0,0,0)),
+      // new Pose3d(-0.069,0, 0.343 + m_robotContainer.m_elevatorSubsystem.getPosition(), new Rotation3d(Math.toRadians(m_robotContainer.m_armSubsystem.getAngle()),0,0))});
   }
 
   @Override

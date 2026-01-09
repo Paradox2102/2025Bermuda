@@ -227,9 +227,9 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putString("Control Mode", m_state.getName());
+    // SmartDashboard.putString("Control Mode", m_state.getName());
     m_hasGamePiece = m_rollerSubsystem.hasGamePiece() || m_clawSubsystem.hasGamePiece();
-    SmartDashboard.putBoolean("Has Gamepiece", m_hasGamePiece);
-    SmartDashboard.putBoolean("isclimbing", m_climberOut);
+  //   SmartDashboard.putBoolean("Has Gamepiece", m_hasGamePiece);
+  //   SmartDashboard.putBoolean("isclimbing", m_climberOut);
   }
 }

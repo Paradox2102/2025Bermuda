@@ -130,8 +130,8 @@ public class ArmSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
     m_output = m_pid.calculate(getAngle(), getSetPoint()) + ArmConstants.k_f * Math.cos(Math.toRadians(getAngle()));
     m_armMotor.setVoltage(m_output);
-    SmartDashboard.putNumber("Arm Angle", getAngle());
-    SmartDashboard.putNumber("Arm voltage", m_output);
+    // SmartDashboard.putNumber("Arm Angle", getAngle());
+    // SmartDashboard.putNumber("Arm voltage", m_output);
   }
 
   public void simulationPeriodic() {

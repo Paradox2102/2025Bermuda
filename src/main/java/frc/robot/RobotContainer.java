@@ -56,14 +56,14 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
       "swerve"));
-  public IntakePivotSubsystem m_pivotSubsystem = new IntakePivotSubsystem();
-  public IntakeRollerSubsystem m_rollerSubsystem = new IntakeRollerSubsystem();
-  public ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
-  public ArmSubsystem m_armSubsystem = new ArmSubsystem();
-  public ClawSubsystem m_clawSubsystem = new ClawSubsystem();
-  public ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
-  public CageCatchSubsystem m_cageSubsystem = new CageCatchSubsystem();
-  public Superstructure m_superstructure = new Superstructure(m_pivotSubsystem, m_rollerSubsystem, m_elevatorSubsystem, m_armSubsystem, m_clawSubsystem, m_climberSubsystem, m_cageSubsystem);
+//   public IntakePivotSubsystem m_pivotSubsystem = new IntakePivotSubsystem();
+//   public IntakeRollerSubsystem m_rollerSubsystem = new IntakeRollerSubsystem();
+//   public ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
+//   public ArmSubsystem m_armSubsystem = new ArmSubsystem();
+//   public ClawSubsystem m_clawSubsystem = new ClawSubsystem();
+//   public ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
+//   public CageCatchSubsystem m_cageSubsystem = new CageCatchSubsystem();
+//   public Superstructure m_superstructure = new Superstructure(m_pivotSubsystem, m_rollerSubsystem, m_elevatorSubsystem, m_armSubsystem, m_clawSubsystem, m_climberSubsystem, m_cageSubsystem);
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled
@@ -121,7 +121,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the trigger bindings
-    addNamedCommands();
+    // addNamedCommands();
     configureBindings();
     updateAutoChooser();
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -153,8 +153,8 @@ public class RobotContainer {
     m_driverController.povUp().onTrue(m_swerveSubsystem.resetGyro());
 
     m_driverController.povDown().onTrue(m_swerveSubsystem.moveToReefFace());
-    m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
-    m_clawSubsystem.setDefaultCommand(m_clawSubsystem.hold());
+    // m_rollerSubsystem.setDefaultCommand(m_rollerSubsystem.hold());
+    // m_clawSubsystem.setDefaultCommand(m_clawSubsystem.hold());
 
     if (Robot.isSimulation()) {
       Pose2d target = new Pose2d(new Translation2d(1, 4),
@@ -175,57 +175,57 @@ public class RobotContainer {
     }
     //m_superstructure.setDefaultCommand(m_superstructure.stow());
     // //Bind different commands to buttons depending on whether or not the robot holds a coral
-    m_driverController.leftTrigger().onTrue(new ConditionalCommand(
-        m_superstructure.reefAlgae(true), 
-        m_superstructure.scoreLevel(ElevatorState.L4),
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.leftTrigger().onTrue(new ConditionalCommand(
+//         // m_superstructure.reefAlgae(true), 
+//         // m_superstructure.scoreLevel(ElevatorState.L4),
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_driverController.leftBumper().onTrue(new ConditionalCommand(
-        m_superstructure.reefAlgae(false), 
-        m_superstructure.scoreLevel(ElevatorState.L3), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.leftBumper().onTrue(new ConditionalCommand(
+//         // m_superstructure.reefAlgae(false), 
+//         // m_superstructure.scoreLevel(ElevatorState.L3), 
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_driverController.a().onTrue(new ConditionalCommand(
-        m_superstructure.scoreNet(), 
-        m_superstructure.scoreLevel(ElevatorState.L2), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.a().onTrue(new ConditionalCommand(
+//         m_superstructure.scoreNet(), 
+//         m_superstructure.scoreLevel(ElevatorState.L2), 
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_driverController.y().onTrue(new ConditionalCommand(
-        m_superstructure.scoreProcessor(), 
-        m_superstructure.clawL1(), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.y().onTrue(new ConditionalCommand(
+//         m_superstructure.scoreProcessor(), 
+//         m_superstructure.clawL1(), 
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-     m_driverController.rightTrigger().whileTrue(new ConditionalCommand(
-        m_superstructure.groundCoral().andThen(m_superstructure.goToHandoff()), 
-        m_superstructure.scoreLevel(ElevatorState.L4), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//      m_driverController.rightTrigger().whileTrue(new ConditionalCommand(
+//         m_superstructure.groundCoral().andThen(m_superstructure.goToHandoff()), 
+//         m_superstructure.scoreLevel(ElevatorState.L4), 
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_driverController.rightBumper().onTrue(new ConditionalCommand(
-        m_superstructure.intakeL1(), 
-        m_superstructure.scoreLevel(ElevatorState.L3), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.rightBumper().onTrue(new ConditionalCommand(
+//         m_superstructure.intakeL1(), 
+//         m_superstructure.scoreLevel(ElevatorState.L3), 
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_driverController.b().whileTrue(new ConditionalCommand(
-        m_climberSubsystem.runOut(false).alongWith(m_cageSubsystem.stop()), 
-        new InstantCommand(), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.b().whileTrue(new ConditionalCommand(
+//         m_climberSubsystem.runOut(false).alongWith(m_cageSubsystem.stop()), 
+//         new InstantCommand(), 
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
     
-    m_driverController.b().onTrue(new ConditionalCommand(
-        new InstantCommand(),
-        m_superstructure.scoreLevel(ElevatorState.L2),
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.b().onTrue(new ConditionalCommand(
+//         new InstantCommand(),
+//         m_superstructure.scoreLevel(ElevatorState.L2),
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_driverController.x().onTrue(new ConditionalCommand(
-        m_superstructure.goToHandoff().andThen(m_superstructure.handoff()), 
-        /*m_armSubsystem.switchSides()*/new InstantCommand(), 
-        () -> m_superstructure.getState() == RobotState.INTAKE));
+//     m_driverController.x().onTrue(new ConditionalCommand(
+//         m_superstructure.goToHandoff().andThen(m_superstructure.handoff()), 
+//         /*m_armSubsystem.switchSides()*/new InstantCommand(), 
+//         () -> m_superstructure.getState() == RobotState.INTAKE));
 
-    m_operatorController.button(1).onTrue(m_superstructure.cancelScoring());
-    m_operatorController.button(2).whileTrue(m_climberSubsystem.runOut(true).alongWith(m_cageSubsystem.run(),  m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.ALGAE), m_elevatorSubsystem.runManual(false).until(() -> m_elevatorSubsystem.getPosition() < 0.05)), m_pivotSubsystem.setPosition(IntakeState.INTAKE), m_superstructure.switchModes(RobotState.INTAKE)));
-    m_operatorController.button(3).whileTrue(m_elevatorSubsystem.runManual(true));
-    m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
-    m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
-    m_operatorController.button(7).onTrue(m_superstructure.switchModes(RobotState.CORAL));
+//     m_operatorController.button(1).onTrue(m_superstructure.cancelScoring());
+//     m_operatorController.button(2).whileTrue(m_climberSubsystem.runOut(true).alongWith(m_cageSubsystem.run(),  m_armSubsystem.switchSides(false).andThen(m_armSubsystem.setPosition(ArmState.ALGAE), m_elevatorSubsystem.runManual(false).until(() -> m_elevatorSubsystem.getPosition() < 0.05)), m_pivotSubsystem.setPosition(IntakeState.INTAKE), m_superstructure.switchModes(RobotState.INTAKE)));
+//     m_operatorController.button(3).whileTrue(m_elevatorSubsystem.runManual(true));
+//     m_operatorController.button(4).whileTrue(m_elevatorSubsystem.runManual(false));
+//     m_operatorController.button(5).whileTrue(m_pivotSubsystem.runDown());
+//     m_operatorController.button(7).onTrue(m_superstructure.switchModes(RobotState.CORAL));
   }
 
    private void updateAutoChooser() {
@@ -236,14 +236,14 @@ public class RobotContainer {
     SmartDashboard.putData(m_autoSelect);
   }
 
-  private void addNamedCommands() {
-    NamedCommands.registerCommand("L4", m_superstructure.goToLevel(ElevatorState.L4));
-    NamedCommands.registerCommand("Score", m_superstructure.scoreCoralResetElev());
-    NamedCommands.registerCommand("High Reef Algae", m_superstructure.reefAlgae(true));
-    NamedCommands.registerCommand("Low Reef Algae", m_superstructure.reefAlgae(false));
-    NamedCommands.registerCommand("Net Sequence", m_superstructure.scoreNet());
-    NamedCommands.registerCommand("Reset", m_superstructure.cancelScoring());
-  }
+//   private void addNamedCommands() {
+//     NamedCommands.registerCommand("L4", m_superstructure.goToLevel(ElevatorState.L4));
+//     NamedCommands.registerCommand("Score", m_superstructure.scoreCoralResetElev());
+//     NamedCommands.registerCommand("High Reef Algae", m_superstructure.reefAlgae(true));
+//     NamedCommands.registerCommand("Low Reef Algae", m_superstructure.reefAlgae(false));
+//     NamedCommands.registerCommand("Net Sequence", m_superstructure.scoreNet());
+//     NamedCommands.registerCommand("Reset", m_superstructure.cancelScoring());
+//   }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

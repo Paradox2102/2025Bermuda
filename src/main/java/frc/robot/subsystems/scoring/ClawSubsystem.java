@@ -105,7 +105,7 @@ public class ClawSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("Claw Speed", getSpeed());
-    SmartDashboard.putNumber("Claw Current", getCurrentDraw());
+    // SmartDashboard.putNumber("Claw Speed", getSpeed());
+    // SmartDashboard.putNumber("Claw Current", getCurrentDraw());
   }
 }

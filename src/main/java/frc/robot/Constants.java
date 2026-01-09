@@ -6,6 +6,9 @@ package frc.robot;
 
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.therekrab.autopilot.APConstraints;
+import com.therekrab.autopilot.APProfile;
+import com.therekrab.autopilot.Autopilot;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.geometry.Translation3d;
@@ -242,5 +245,18 @@ public final class Constants
     public static final int climber = 30; 
     public static final int climber_follow = 31; 
     public static final int cage_grabber = 32; 
+  }
+
+  public static class AutopilotConstants {
+
+    public static final double acceleration = 5.0; //placeholder
+    public static final double jerk = 2.0; //placeholder
+
+    public static final APConstraints k_constraints = new APConstraints(acceleration, jerk);
+
+    //parameters include error margin and beeline radius. When not passed through they are zero.
+    public static final APProfile profile = new APProfile(k_constraints); 
+    
+    public static final Autopilot autopilot = new Autopilot(profile);
   }
 }
